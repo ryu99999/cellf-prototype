@@ -3,37 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  
-  <!-- PWA: 홈 화면 추가 시 풀스크린 -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Cellf">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#ffffff">
-  
+  <meta name="theme-color" content="#f0f1f3">
   <title>Cellf — 소비 생태계</title>
-  
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body, #root {
-      width: 100%; height: 100%;
-      overflow: hidden;
-      background: #fff;
-      -webkit-text-size-adjust: 100%;
-      -webkit-tap-highlight-color: transparent;
-    }
-    body {
-      overscroll-behavior: none;
-      -webkit-overflow-scrolling: touch;
-    }
+    html, body, #root { width: 100%; height: 100%; overflow: hidden; background: #f0f1f3; -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+    body { overscroll-behavior: none; }
   </style>
-  
-  <!-- React 18 CDN -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <!-- Babel: JSX 인라인 트랜스파일 -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <!-- Pretendard 폰트 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 </head>
 <body>
@@ -2249,9 +2232,21 @@ function OnboardingFlow(props){
   );
 }
 
-/* ═══ iPhone 14 Pro Device Frame Wrapper ═══ */
+/* ═══ Adaptive Phone Frame — 콘텐츠 비율 축소 ═══ */
 function CellfApp(){
   var _ob=useState(true),showOnboarding=_ob[0],setShowOnboarding=_ob[1];
+  var _vh=useState(window.innerHeight),vh=_vh[0],setVh=_vh[1];
+  var _vw=useState(window.innerWidth),vw=_vw[0],setVw=_vw[1];
+
+  useEffect(function(){
+    function onResize(){
+      setVh(window.visualViewport?window.visualViewport.height:window.innerHeight);
+      setVw(window.innerWidth);
+    }
+    window.addEventListener("resize",onResize);
+    window.visualViewport&&window.visualViewport.addEventListener("resize",onResize);
+    return function(){window.removeEventListener("resize",onResize)};
+  },[]);
 
   function handleOnboardingDone(budget,presetId){
     var presetRatios={
@@ -2266,34 +2261,84 @@ function CellfApp(){
     setShowOnboarding(false);
   }
 
+  /* 네이티브 앱 크기 (설계 기준) */
+  var NATIVE_W=390,NATIVE_H=844;
+  var FRAME_PAD=6;
+  var MARGIN=8;
+
+  /* 프레임 크기: 뷰포트에서 여유를 뺀 영역에 iPhone 비율로 맞춤 */
+  var availH=vh-MARGIN*2;
+  var availW=vw-MARGIN*2;
+
+  var frameH=availH;
+  var frameW=Math.round((frameH-FRAME_PAD*2)*(NATIVE_W/NATIVE_H)+FRAME_PAD*2);
+
+  if(frameW>availW){
+    frameW=availW;
+    frameH=Math.round((frameW-FRAME_PAD*2)*(NATIVE_H/NATIVE_W)+FRAME_PAD*2);
+  }
+
+  var screenW=frameW-FRAME_PAD*2;
+  var screenH=frameH-FRAME_PAD*2;
+
+  /* 스케일: 네이티브 크기를 screen 크기로 축소 */
+  var scale=Math.min(screenW/NATIVE_W,screenH/NATIVE_H);
+  var borderR=Math.round(47*scale);
+
   return(
     <div style={{
-      width:"100%",maxWidth:430,margin:"0 auto",
-      minHeight:"100vh",minHeight:"100dvh",
-      background:tds.bg,fontFamily:FF,
-      position:"relative",overflow:"hidden",
+      width:"100%",height:vh,
+      display:"flex",alignItems:"center",justifyContent:"center",
+      background:"#f0f1f3",fontFamily:FF,
+      overflow:"hidden",
     }}>
       <style>{
-        
-        ""
+        "html,body{margin:0;padding:0;background:#f0f1f3;-webkit-text-size-adjust:100%;overflow:hidden}\n"+
+        "body{overscroll-behavior:none}\n"
       }</style>
 
-      {/* 앱 컨텐츠 */}
+      {/* ── Phone Frame ── */}
       <div style={{
-        position:"absolute",inset:0,
-        overflowY:showOnboarding?"hidden":"auto",overflowX:"hidden",
-        WebkitOverflowScrolling:"touch",
+        width:frameW,height:frameH,
+        borderRadius:borderR+3,
+        background:"#e0e2e6",
+        boxShadow:"0 4px 24px rgba(0,0,0,0.06), 0 1px 8px rgba(0,0,0,0.03)",
+        position:"relative",
+        flexShrink:0,
       }}>
-        {showOnboarding
-          ?<OnboardingFlow onDone={handleOnboardingDone}/>
-          :<CellfAppInner/>
-        }
+        {/* ── Screen: 네이티브 크기로 렌더 → scale로 축소 ── */}
+        <div style={{
+          position:"absolute",
+          top:FRAME_PAD,left:FRAME_PAD,
+          width:screenW,height:screenH,
+          borderRadius:borderR,
+          overflow:"hidden",
+          background:tds.bg,
+        }}>
+          <div style={{
+            width:NATIVE_W,height:NATIVE_H,
+            transform:"scale("+scale+")",
+            transformOrigin:"0 0",
+            position:"relative",
+          }}>
+            {/* 앱 컨텐츠 — 390×844 네이티브 크기로 렌더됨 */}
+            <div style={{
+              position:"absolute",inset:0,
+              overflowY:showOnboarding?"hidden":"auto",overflowX:"hidden",
+              WebkitOverflowScrolling:"touch",
+            }}>
+              {showOnboarding
+                ?<OnboardingFlow onDone={handleOnboardingDone}/>
+                :<CellfAppInner/>
+              }
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-// Mount
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(CellfApp));
   </script>
 </body>
