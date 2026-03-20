@@ -372,6 +372,7 @@ function CellNode(props){
   function onDown(e){
     /* 핀치 줌 중이면 세포 터치 무시 — 손가락 1개만 인식 */
     if(e.touches&&e.touches.length>1) return;
+    e.stopPropagation(); /* scope pan 방지 */
     var d2=ds.current;
     d2.wasPinch=false;
     var t=e.touches?e.touches[0]:e;
@@ -384,7 +385,6 @@ function CellNode(props){
       el.style.zIndex="20";
       el.style.animationName="none";
     }
-    /* 핀치 감지: 두번째 손가락이 올라오면 취소 */
     function onExtraTouch(ev){if(ev.touches.length>1){d2.wasPinch=true;d2.dragging=false;var el2=nodeRef.current;if(el2){el2.style.zIndex="2";el2.style.animationName="cf"+cell.id;}}}
     window.addEventListener("touchstart",onExtraTouch,{passive:true});
     function cleanup(){window.removeEventListener("touchstart",onExtraTouch)}
@@ -1209,9 +1209,10 @@ function CellfAppInner(){
   var _absorb=useState(null),absorb=_absorb[0],setAbsorb=_absorb[1];
   var _tab=useState("home"),tab=_tab[0],setTab=_tab[1];
   var _reportMonth=useState(3),reportMonth=_reportMonth[0],setReportMonth=_reportMonth[1];
-  var pinchRef=useRef({dist0:0,zoom0:1});
+  var pinchRef=useRef({dist0:0,zoom0:1,pinching:false,lastZoom:1,lastPan:{x:0,y:0}});
   var panRef=useRef({panning:false,startX:0,startY:0,prevX:0,prevY:0});
   var scopeRef=useRef(null);
+  var cellsLayerRef=useRef(null);
 
   useEffect(function(){var t=setTimeout(function(){setIntro(false)},2800);return function(){clearTimeout(t)}},[]);
 
@@ -1240,9 +1241,8 @@ function CellfAppInner(){
 
   /* ★ 줌 + 패닝 핸들러 */
   var ZOOM_MIN=0.55,ZOOM_MAX=1.8;
-  /* 패닝 한계: 줌 배율에 비례하여 확장 */
   function clampPan(px,py,z){
-    var maxP=(z-1)*50; /* 줌 1x→0, 1.5x→25%, 1.8x→40% 이동 가능 */
+    var maxP=(z-1)*50;
     if(maxP<0) maxP=0;
     return{x:Math.max(-maxP,Math.min(maxP,px)),y:Math.max(-maxP,Math.min(maxP,py))};
   }
@@ -1251,7 +1251,6 @@ function CellfAppInner(){
     var delta=-e.deltaY*0.002;
     setZoom(function(z){
       var nz=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,z+delta));
-      /* 줌 아웃 시 패닝 한계 자동 보정 */
       if(nz<=1) setPan({x:0,y:0});
       else setPan(function(p){return clampPan(p.x,p.y,nz)});
       return nz;
@@ -1259,11 +1258,11 @@ function CellfAppInner(){
   }
   /* 패닝 — 빈 공간 드래그 (줌>1 시) */
   function handleScopeDown(e){
-    /* 세포 위에서 시작된 드래그는 CellNode가 처리 */
     if(e.target!==e.currentTarget&&e.target.tagName!=="DIV") return;
     if(zoom<=1) return;
+    if(pinchRef.current.pinching) return;
     var t=e.touches?e.touches[0]:e;
-    if(e.touches&&e.touches.length===2) return; /* 핀치는 별도 */
+    if(e.touches&&e.touches.length===2) return;
     var pr=panRef.current;
     pr.panning=true; pr.startX=t.clientX; pr.startY=t.clientY;
     pr.prevX=pan.x; pr.prevY=pan.y;
@@ -1272,8 +1271,9 @@ function CellfAppInner(){
   useEffect(function(){
     var el=scopeRef.current; if(!el) return;
     var pr=panRef.current;
+    var pRef=pinchRef.current;
     function onPanMove(e){
-      if(!pr.panning) return;
+      if(!pr.panning||pRef.pinching) return;
       var t=e.touches?e.touches[0]:e;
       if(e.touches&&e.touches.length===2){pr.panning=false;return;}
       var dx=(t.clientX-pr.startX)/zoom;
@@ -1283,31 +1283,53 @@ function CellfAppInner(){
       e.preventDefault();
     }
     function onPanUp(){pr.panning=false}
+
+    /* ── 핀치 줌: DOM 직접 조작 (리렌더 없음) ── */
+    function applyZoomDOM(z,p){
+      var layer=cellsLayerRef.current;
+      var grid=el.querySelector("[data-grid]");
+      if(layer) layer.style.transform="scale("+z+") translate("+p.x+"%,"+p.y+"%)";
+      if(grid) grid.style.backgroundSize=(50*z)+"px "+(50*z)+"px";
+    }
     function handleTouchStart(e){
       if(e.touches.length===2){
         pr.panning=false;
         var dx2=e.touches[0].clientX-e.touches[1].clientX;
         var dy2=e.touches[0].clientY-e.touches[1].clientY;
-        pinchRef.current.dist0=Math.sqrt(dx2*dx2+dy2*dy2);
-        pinchRef.current.zoom0=zoom;
+        pRef.dist0=Math.sqrt(dx2*dx2+dy2*dy2);
+        pRef.zoom0=zoom;
+        pRef.pinching=true;
+        pRef.lastZoom=zoom;
+        pRef.lastPan={x:pan.x,y:pan.y};
       }
     }
     function handleTouchMove(e){
-      if(e.touches.length===2){
+      if(e.touches.length===2&&pRef.pinching){
         e.preventDefault();
         var dx2=e.touches[0].clientX-e.touches[1].clientX;
         var dy2=e.touches[0].clientY-e.touches[1].clientY;
         var dist=Math.sqrt(dx2*dx2+dy2*dy2);
-        var ratio=dist/pinchRef.current.dist0;
-        var nz=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,pinchRef.current.zoom0*ratio));
-        setZoom(nz);
-        if(nz<=1) setPan({x:0,y:0});
-        else setPan(function(p){return clampPan(p.x,p.y,nz)});
+        var ratio=dist/pRef.dist0;
+        var nz=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,pRef.zoom0*ratio));
+        var np=nz<=1?{x:0,y:0}:clampPan(pRef.lastPan.x,pRef.lastPan.y,nz);
+        pRef.lastZoom=nz;
+        pRef.lastPan=np;
+        /* DOM 직접 조작 — React 리렌더 없이 60fps */
+        applyZoomDOM(nz,np);
+      }
+    }
+    function handleTouchEnd(e){
+      if(pRef.pinching&&e.touches.length<2){
+        pRef.pinching=false;
+        /* touchend에서만 React state 커밋 — 1회 리렌더 */
+        setZoom(pRef.lastZoom);
+        setPan(pRef.lastPan);
       }
     }
     el.addEventListener("wheel",handleWheel,{passive:false});
     el.addEventListener("touchstart",handleTouchStart,{passive:true});
     el.addEventListener("touchmove",handleTouchMove,{passive:false});
+    el.addEventListener("touchend",handleTouchEnd,{passive:true});
     window.addEventListener("mousemove",onPanMove,{passive:false});
     window.addEventListener("mouseup",onPanUp);
     window.addEventListener("touchmove",onPanMove,{passive:false});
@@ -1316,6 +1338,7 @@ function CellfAppInner(){
       el.removeEventListener("wheel",handleWheel);
       el.removeEventListener("touchstart",handleTouchStart);
       el.removeEventListener("touchmove",handleTouchMove);
+      el.removeEventListener("touchend",handleTouchEnd);
       window.removeEventListener("mousemove",onPanMove);
       window.removeEventListener("mouseup",onPanUp);
       window.removeEventListener("touchmove",onPanMove);
@@ -1441,7 +1464,7 @@ function CellfAppInner(){
           <rect width="100%" height="100%" filter="url(#cultureMediumNoise)"/>
         </svg>
         {/* 그리드 */}
-        <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient("+sb.gridTint+" 1px, transparent 1px), linear-gradient(90deg, "+sb.gridTint+" 1px, transparent 1px)",backgroundSize:(50*zoom)+"px "+(50*zoom)+"px",pointerEvents:"none",zIndex:1,transition:"background-size 0.3s ease"}}/>
+        <div data-grid="1" style={{position:"absolute",inset:0,backgroundImage:"linear-gradient("+sb.gridTint+" 1px, transparent 1px), linear-gradient(90deg, "+sb.gridTint+" 1px, transparent 1px)",backgroundSize:(50*zoom)+"px "+(50*zoom)+"px",pointerEvents:"none",zIndex:1}}/>
         {/* 비네팅 */}
         <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,"+(sb.vignetteOpacity+0.03)+") 100%)",pointerEvents:"none",zIndex:12}}/>
         {/* 코스틱 */}
@@ -1586,11 +1609,11 @@ function CellfAppInner(){
         )}
 
         {/* ── 세포 줌+패닝 레이어 ── */}
-        <div style={{
+        <div ref={cellsLayerRef} style={{
           position:"absolute",inset:0,zIndex:2,
           transform:"scale("+zoom+") translate("+pan.x+"%,"+pan.y+"%)",
           transformOrigin:"50% 50%",
-          transition:panRef.current.panning?"none":"transform 0.15s ease-out",
+          willChange:"transform",
         }}>
         {cells.map(function(c){
           var dimmed=activeTypes!==null&&!activeTypes[c.type];
