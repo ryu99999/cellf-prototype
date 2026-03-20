@@ -3,20 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  
+  <!-- PWA: 홈 화면 추가 시 풀스크린 -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Cellf">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#f2f4f6">
+  <meta name="theme-color" content="#ffffff">
+  
   <title>Cellf — 소비 생태계</title>
+  
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body, #root { width: 100%; height: 100%; overflow: hidden; background: #f2f4f6; -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
-    body { overscroll-behavior: none; }
+    html, body, #root {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: #fff;
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: touch;
+    }
   </style>
+  
+  <!-- React 18 CDN -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel: JSX 인라인 트랜스파일 -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Pretendard 폰트 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 </head>
 <body>
@@ -2232,18 +2249,9 @@ function OnboardingFlow(props){
   );
 }
 
-/* ═══ Adaptive Phone Frame — Safari 대응 ═══ */
+/* ═══ iPhone 14 Pro Device Frame Wrapper ═══ */
 function CellfApp(){
   var _ob=useState(true),showOnboarding=_ob[0],setShowOnboarding=_ob[1];
-  var _vh=useState(window.innerHeight),vh=_vh[0],setVh=_vh[1];
-
-  useEffect(function(){
-    function onResize(){setVh(window.innerHeight)}
-    window.addEventListener("resize",onResize);
-    /* iOS Safari 주소창 변화 감지 */
-    window.visualViewport&&window.visualViewport.addEventListener("resize",function(){setVh(window.visualViewport.height)});
-    return function(){window.removeEventListener("resize",onResize)};
-  },[]);
 
   function handleOnboardingDone(budget,presetId){
     var presetRatios={
@@ -2258,75 +2266,34 @@ function CellfApp(){
     setShowOnboarding(false);
   }
 
-  /* 프레임 크기 계산: 뷰포트에 맞춰 iPhone 비율 유지 */
-  var PHONE_RATIO=393/852; /* iPhone 14 Pro 가로/세로 비율 */
-  var FRAME_PAD=12; /* 프레임 두께 */
-  var MARGIN=12; /* 상하좌우 여유 */
-
-  var availH=vh-MARGIN*2;
-  var availW=window.innerWidth-MARGIN*2;
-
-  /* 높이 기준으로 계산, 너비 초과 시 너비 기준 */
-  var phoneH=availH-FRAME_PAD*2;
-  var phoneW=Math.round(phoneH*PHONE_RATIO);
-
-  if(phoneW+FRAME_PAD*2>availW){
-    phoneW=availW-FRAME_PAD*2;
-    phoneH=Math.round(phoneW/PHONE_RATIO);
-  }
-
-  var frameW=phoneW+FRAME_PAD*2;
-  var frameH=phoneH+FRAME_PAD*2;
-  var borderR=Math.round(phoneH*0.055); /* ~47px at full size */
-
   return(
     <div style={{
-      width:"100%",height:vh,
-      display:"flex",alignItems:"center",justifyContent:"center",
-      background:"#f2f4f6",fontFamily:FF,
-      overflow:"hidden",
+      width:"100%",maxWidth:430,margin:"0 auto",
+      minHeight:"100vh",minHeight:"100dvh",
+      background:tds.bg,fontFamily:FF,
+      position:"relative",overflow:"hidden",
     }}>
       <style>{
-        "html,body{margin:0;padding:0;background:#f2f4f6;-webkit-text-size-adjust:100%;overflow:hidden}\n"+
-        "body{overscroll-behavior:none}\n"
+        
+        ""
       }</style>
 
-      {/* ── Phone Frame ── */}
+      {/* 앱 컨텐츠 */}
       <div style={{
-        width:frameW,height:frameH,
-        borderRadius:borderR+4,
-        background:"#e5e8eb",
-        boxShadow:"0 8px 40px rgba(0,0,0,0.08), 0 2px 12px rgba(0,0,0,0.04)",
-        position:"relative",
-        flexShrink:0,
+        position:"absolute",inset:0,
+        overflowY:showOnboarding?"hidden":"auto",overflowX:"hidden",
+        WebkitOverflowScrolling:"touch",
       }}>
-        {/* ── Screen ── */}
-        <div style={{
-          position:"absolute",
-          top:FRAME_PAD,left:FRAME_PAD,
-          width:phoneW,height:phoneH,
-          borderRadius:borderR,
-          overflow:"hidden",
-          background:tds.bg,
-          transform:"translateZ(0)",
-        }}>
-          {/* 앱 컨텐츠 */}
-          <div style={{
-            position:"absolute",inset:0,
-            overflowY:showOnboarding?"hidden":"auto",overflowX:"hidden",
-            WebkitOverflowScrolling:"touch",
-          }}>
-            {showOnboarding
-              ?<OnboardingFlow onDone={handleOnboardingDone}/>
-              :<CellfAppInner/>
-            }
-          </div>
-        </div>
+        {showOnboarding
+          ?<OnboardingFlow onDone={handleOnboardingDone}/>
+          :<CellfAppInner/>
+        }
       </div>
     </div>
   );
 }
 
+// Mount
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(CellfApp));
   </script>
 </body>
