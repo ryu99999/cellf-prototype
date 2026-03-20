@@ -1,0 +1,2300 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  
+  <!-- PWA: 홈 화면 추가 시 풀스크린 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Cellf">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#ffffff">
+  
+  <title>Cellf — 소비 생태계</title>
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #root {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: #fff;
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: touch;
+    }
+  </style>
+  
+  <!-- React 18 CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel: JSX 인라인 트랜스파일 -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Pretendard 폰트 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
+
+/* ═══ TDS Tokens (tossmini-docs.toss.im verified) ═══ */
+var tds={
+  grey50:"#f9fafb",grey100:"#f2f4f6",grey200:"#e5e8eb",grey300:"#d1d6db",
+  grey400:"#b0b8c1",grey500:"#8b95a1",grey600:"#6b7684",grey700:"#4e5968",
+  grey800:"#333d4b",grey900:"#191f28",
+  blue50:"#edf8f8",blue200:"#89d8d8",blue400:"#30b6b6",blue500:"#18a5a5",blue600:"#109595",blue300:"#58c7c7",
+  red50:"#ffeeee",red200:"#feafb4",red400:"#f66570",red500:"#f04452",
+  green50:"#f0faf6",green100:"#aeefd5",green200:"#76e4b8",green400:"#15c47e",green500:"#03b26c",
+  orange50:"#fff3e0",orange400:"#ffa927",orange500:"#fe9800",
+  purple400:"#b44bd7",purple500:"#a234c7",
+  bg:"#FFFFFF",
+};
+
+/* Typography — TDS scale */
+var typo={
+  t3:{s:22,h:31},t4:{s:20,h:29},t5:{s:17,h:25.5},
+  t6:{s:15,h:22.5},t7:{s:13,h:19.5},
+  sub12:{s:12,h:18},sub11:{s:11,h:16.5},
+};
+
+/* ★ 개선 #7: 간격 리듬 차별화 */
+var sp={xs:4,sm:8,md:16,lg:24,xl:32};
+
+/* ★ 개선 #6: Pretendard (한국어 최적화 폰트) */
+var FF="'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif";
+var MONO="'SF Mono',SFMono-Regular,'JetBrains Mono',Menlo,monospace";
+
+/* ═══ Budget System ═══ */
+var BUDGETS={
+  total:1300000,
+  cats:{"생활":650000,"구독":130000,"쇼핑":260000,"엔터":130000,"기타":130000},
+};
+var PRESETS={
+  balanced:{label:"균형형",desc:"쇼핑·여가에도 여유 있게",ratios:{"생활":0.40,"구독":0.10,"쇼핑":0.25,"엔터":0.15,"기타":0.10}},
+  saving:{label:"절약형",desc:"생활비 중심, 나머지는 최소로",ratios:{"생활":0.70,"구독":0.05,"쇼핑":0.10,"엔터":0.05,"기타":0.10}},
+};
+
+/* ═══ Data ═══ */
+var CELLS=[
+  /* 일반 지출 (고리 없음, 파란색) */
+  {id:1,name:"식비",type:"subscription",cat:"생활",amt:450000,last:"오늘",freq:"매일",
+    isSubscription:false,
+    diag:"적정 범위 내 안정적 유지. 변동폭 ±5% 이내.",
+    diagDetail:"월 평균 45만원. 외식 38%, 배달 22%, 장보기 40%. 지난달과 유사한 패턴.",
+    rx:"현재 패턴을 유지하세요.",
+    rxSteps:["현재 패턴 유지 권장","외식 비율 모니터링 (40% 이상 시 경고)"]},
+  {id:2,name:"교통비",type:"subscription",cat:"생활",amt:85000,last:"오늘",freq:"매일",
+    isSubscription:false,
+    diag:"매우 안정적. 필수 소비입니다.",
+    diagDetail:"출퇴근 교통카드 + 주말 택시. 변동 거의 없음. 최적 상태.",
+    rx:"안정적인 상태입니다.",rxSteps:["유지"]},
+
+  /* 구독 지출 (고리 있음, 파란색 + orbit) */
+  {id:3,name:"Spotify",type:"subscription",cat:"구독",amt:10900,last:"오늘",freq:"월간",
+    isSubscription:true,usageRate:92,
+    diag:"매일 사용 중인 구독입니다. 사용률 92%.",
+    diagDetail:"일 평균 청취 48분. 오프라인 저장 24곡 활용 중. 가성비 상위 구독.",
+    rx:"잘 쓰고 있는 구독입니다.",rxSteps:["유지"]},
+
+  /* 종양 세포 (고리 없음, 다크 비주얼) */
+  {id:4,name:"게임 현질",type:"tumor",cat:"엔터",amt:143000,last:"오늘",freq:"수시",
+    isSubscription:false,
+    diag:"3개월 연속 증가 중. 지난달 대비 180% 성장. 주말 밤에 집중되는 충동 소비 패턴입니다.",
+    diagDetail:"금요일 22~02시 사이에 전체 지출의 73% 집중. 1회 평균 결제 12,400→23,800원 상승 추세. 월급일 전후 3일간 폭발적 증가.",
+    rx:"월 50,000원 한도 설정 시 과소비 증가를 막을 수 있습니다.",
+    rxSteps:["월 한도 50,000원 설정 (현재 대비 -65%)","주말 밤 알림 켜기","2주 관찰 후 재진단"]},
+  {id:5,name:"무신사",type:"tumor",cat:"쇼핑",amt:287000,last:"3일 전",freq:"주2-3회",
+    isSubscription:false,
+    diag:"급여일 직후 3일간 전체 지출의 68%가 집중됩니다.",
+    diagDetail:"월 평균 6.2회 결제. 장바구니→결제 평균 4분(충동 시그널). 할인 쿠폰 만료 알림 후 24h 이내 결제율 89%.",
+    rx:"급여일 후 72시간 쿨다운 규칙을 적용하세요.",
+    rxSteps:["급여일 후 72시간 쿨다운 설정","장바구니 24시간 보류 규칙","월 150,000원 한도 설정 (-48%)"]},
+
+  /* 사멸대기 (고리 있음, 느린 회전, 채도 저하) */
+  {id:6,name:"Netflix",type:"dying",cat:"구독",amt:17000,last:"94일 전",freq:"월간",
+    isSubscription:true,usageRate:0,
+    diag:"이 구독은 94일간 사용되지 않았습니다. 정리할 준비가 되었습니다.",
+    diagDetail:"최근 3개월간 접속 기록 없음. 월 결제는 정상 진행 중. 동일 카테고리(OTT) 내 중복 구독 상태.",
+    rx:"월 17,000원을 아낄 수 있습니다. 연간 204,000원 절약.",
+    rxSteps:["정리 시작 → 구독 해지 페이지 연결","월 17,000원 절약","연간 204,000원 절약 예상"]},
+  {id:7,name:"Adobe CC",type:"dying",cat:"구독",amt:46800,last:"67일 전",freq:"월간",
+    isSubscription:true,usageRate:5,
+    diag:"67일간 미사용. 학생 할인 종료 후 월 46,800원으로 갱신 상태.",
+    diagDetail:"Photoshop 마지막 실행: 67일 전. Illustrator: 104일 전. 학생 할인 종료로 23,400→46,800원 자동 인상. 대안: Figma(무료).",
+    rx:"해지하면 연간 561,600원을 아낄 수 있어요.",
+    rxSteps:["정리 시작 → Adobe 구독 관리 연결","연간 561,600원 절약","대안: Figma(무료) 전환 검토"]},
+
+  /* 감염 (고리 깜빡임 — 곧 구독 전환) */
+  {id:8,name:"Notion AI",type:"infected",cat:"구독",amt:9900,last:"미사용",freq:"3일 후 전환",
+    isSubscription:false,daysUntilCharge:3,
+    diag:"⚠️ 3일 후 유료 전환. 한 번도 사용하지 않았습니다.",
+    diagDetail:"무료체험 가입일: 7일 전. 사용 횟수: 0회. 3일 후 월 9,900원 자동 과금. 연간 118,800원 손실.",
+    rx:"지금 바로 정리하세요.",
+    rxSteps:["지금 정리하기 (3일 내)","방치 시 연간 118,800원 손실","비슷한 패턴 향후 자동 감지"]},
+];
+
+/* ═══ Cell Graphics ═══ */
+var PATHS={
+  healthy:"M50,4 C72,1 94,18 97,44 C100,70 83,94 56,97 C29,100 6,80 3,54 C0,28 28,7 50,4Z",
+  subscription:"M50,2 C76,0 96,22 98,50 C100,78 78,98 50,98 C22,98 2,78 2,50 C2,22 24,4 50,2Z",
+  tumor:"M48,1 C62,-1 76,4 86,14 C96,24 101,40 98,56 C95,72 84,86 70,93 C56,100 40,100 27,93 C14,86 4,72 1,56 C-2,40 2,24 12,14 C22,4 34,3 48,1Z",
+  dying:"M50,6 C70,4 88,20 92,44 C96,68 80,88 58,92 C36,96 16,78 12,54 C8,30 30,8 50,6Z",
+  infected:"M50,0 C60,1 70,-1 78,6 C86,13 90,24 88,36 C94,42 100,54 96,66 C92,78 82,86 70,92 C58,98 44,98 32,92 C20,86 10,76 6,64 C2,52 4,40 10,30 C16,20 8,12 18,6 C28,0 38,-1 50,0Z",
+};
+var TC={
+  /* 지출 — 예산 범위 내 정상 지출 (구독은 orbit으로 구분) */
+  subscription:{stops:["rgba(137,216,216,0.63)","rgba(88,199,199,0.23)","rgba(48,182,182,0.07)"],sk:"rgba(48,182,182,0.25)",glow:"rgba(137,216,216,0.25)",txt:tds.grey700,atxt:tds.grey500,lbl:"지출",lc:tds.blue400,badge:tds.blue50,badgeTxt:tds.blue500,ps:"4.5s",orbitColor:tds.blue300},
+  /* 종양 — 예산 초과 (기존 유지) */
+  tumor:{stops:["rgba(15,5,25,0.95)","rgba(60,8,35,0.88)","rgba(180,68,215,0.65)"],sk:"rgba(180,68,215,0.35)",glow:"rgba(180,68,215,0.2)",txt:"rgba(255,255,255,0.92)",atxt:"rgba(220,180,255,0.65)",lbl:"과소비",lc:"#c44bd7",badge:"#f3e8ff",badgeTxt:"#c44bd7",ps:"2.5s"},
+  /* 사멸대기 — 안 쓰는 구독, 채도 저하 */
+  dying:{stops:["rgba(20,20,28,0.85)","rgba(50,50,65,0.6)","rgba(100,100,120,0.25)"],sk:"rgba(120,120,140,0.15)",glow:"rgba(100,100,120,0.15)",txt:"rgba(255,255,255,0.88)",atxt:"rgba(255,255,255,0.65)",lbl:"미사용",lc:tds.grey500,badge:tds.grey100,badgeTxt:tds.grey600,ps:"8s",orbitColor:tds.grey400},
+  /* 감염 — 곧 과금 전환 */
+  infected:{stops:["rgba(18,8,2,0.92)","rgba(80,30,5,0.8)","rgba(255,169,39,0.6)"],sk:"rgba(255,169,39,0.3)",glow:"rgba(255,169,39,0.35)",txt:"rgba(255,245,225,0.9)",atxt:"rgba(255,220,170,0.68)",lbl:"유료 전환",lc:tds.orange500,badge:tds.orange50,badgeTxt:"#e45600",ps:"1.8s",orbitColor:tds.orange400},
+};
+/* ★ 금액→크기 매핑: sqrt 스케일 (면적 비례, 직관적 비교) */
+function amtToSize(amt){
+  var minAmt=9900,maxAmt=450000,minSz=100,maxSz=140;
+  var t=(Math.sqrt(Math.max(amt,minAmt))-Math.sqrt(minAmt))/(Math.sqrt(maxAmt)-Math.sqrt(minAmt));
+  return Math.round(minSz+Math.min(t,1)*(maxSz-minSz));
+}
+
+/* ★ 동적 배치: 건강=중심, 종양=외곽, 사멸=중간 링 + 충돌 방지 */
+function calcPositions(cells){
+  var zones={center:[],mid:[],outer:[]};
+  cells.forEach(function(c){
+    if(c.type==="subscription") zones.center.push(c);
+    else if(c.type==="dying") zones.mid.push(c);
+    else zones.outer.push(c);
+  });
+  var result={};
+  function sr(seed){var x=Math.sin(seed*9301+49297)*49297;return x-Math.floor(x)}
+  function place(group,rMin,rMax,startAngle){
+    var n=group.length;if(!n)return;
+    var step=Math.PI*2/n;
+    group.forEach(function(c,i){
+      var a=startAngle+step*i+(sr(c.id*7)-0.5)*0.45;
+      var r=rMin+sr(c.id*13)*(rMax-rMin);
+      var x=50+Math.cos(a)*r;
+      var y=50+Math.sin(a)*r;
+      var s=amtToSize(c.amt);
+      /* dying 세포는 0.85 스케일 적용되므로 기본 크기 보정 */
+      if(c.type==="dying") s=Math.round(s*1.12);
+      result[c.id]={x:x,y:y,s:s};
+    });
+  }
+  place(zones.center,1,10,0.3);
+  place(zones.mid,12,20,1.6);
+  place(zones.outer,18,28,0.8);
+
+  var ids=cells.map(function(c){return c.id});
+  var CONTAINER=390;
+
+  /* 1단계: 충돌 분리 — 세포 영역이 겹치지 않되 인접하게 */
+  for(var iter=0;iter<60;iter++){
+    for(var a=0;a<ids.length;a++){
+      for(var b=a+1;b<ids.length;b++){
+        var pa=result[ids[a]],pb=result[ids[b]];
+        var dx=pb.x-pa.x,dy=pb.y-pa.y;
+        var dist=Math.sqrt(dx*dx+dy*dy);
+        /* 세포 반경(%) — 균일한 간격: 일반 +6px, orbit +13px */
+        var cellA=cells.find(function(cc){return cc.id===ids[a]});
+        var cellB=cells.find(function(cc){return cc.id===ids[b]});
+        var hasOrbitA=cellA&&(cellA.isSubscription||cellA.type==="dying"||cellA.type==="infected");
+        var hasOrbitB=cellB&&(cellB.isSubscription||cellB.type==="dying"||cellB.type==="infected");
+        /* 일반: 본체 + 여백 6px, orbit: 본체 + 고리 + 위성 13px */
+        var rA=(pa.s+(hasOrbitA?13:6))/2/CONTAINER*100;
+        var rB=(pb.s+(hasOrbitB?13:6))/2/CONTAINER*100;
+        var minDist=rA+rB; /* orbit 외곽끼리 겹치지 않게 */
+        if(dist<minDist&&dist>0.01){
+          var push=(minDist-dist)/2*1.0; /* 풀 푸시 — 확실히 분리 */
+          var nx=dx/dist,ny=dy/dist;
+          pa.x-=nx*push; pa.y-=ny*push;
+          pb.x+=nx*push; pb.y+=ny*push;
+        } else if(dist<=0.01){
+          var ra=sr(ids[a]*17+iter)*Math.PI*2;
+          pa.x+=Math.cos(ra)*8; pa.y+=Math.sin(ra)*8;
+          pb.x-=Math.cos(ra)*8; pb.y-=Math.sin(ra)*8;
+        }
+      }
+    }
+    /* 중심 인력 — 뭉침 유지 */
+    ids.forEach(function(id){
+      var p=result[id];
+      p.x+=(50-p.x)*0.02;
+      p.y+=(50-p.y)*0.02;
+    });
+  }
+
+  /* 2단계: 바운딩 박스 계산 후 가용 영역 중앙 정렬 */
+  /* 가용 영역: x=0~100%, y= 헤더 아래(~20%)부터 하단(~100%) → 중심 y=60% */
+  var VIEW_CX=50, VIEW_CY=60;
+  var bMinX=999,bMaxX=-999,bMinY=999,bMaxY=-999;
+  ids.forEach(function(id){
+    var p=result[id];
+    var r=p.s/2/CONTAINER*100;
+    if(p.x-r<bMinX) bMinX=p.x-r;
+    if(p.x+r>bMaxX) bMaxX=p.x+r;
+    if(p.y-r<bMinY) bMinY=p.y-r;
+    if(p.y+r>bMaxY) bMaxY=p.y+r;
+  });
+  var groupCX=(bMinX+bMaxX)/2;
+  var groupCY=(bMinY+bMaxY)/2;
+  var shiftX=VIEW_CX-groupCX;
+  var shiftY=VIEW_CY-groupCY;
+  ids.forEach(function(id){
+    var p=result[id];
+    p.x+=shiftX;
+    p.y+=shiftY;
+  });
+
+  /* 3단계: 경계 클램핑 */
+  ids.forEach(function(id){
+    var p=result[id];
+    p.x=Math.max(6,Math.min(94,p.x));
+    p.y=Math.max(20,Math.min(95,p.y));
+  });
+  return result;
+}
+var fmt=function(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,",")+"원"};
+/* ★ 세포 내부용 포맷: 항상 전체 금액 표시 */
+var fmtCompact=function(n){
+  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,",")+"원";
+};
+
+/* ═══ Static microscope background — cool gray ═══ */
+var SCOPE_BG={
+  tint:"rgba(230,233,238,0.06)",
+  gridTint:"rgba(180,190,200,0.12)",
+  vignetteOpacity:0.03,
+  depthTint:"rgba(210,218,228,0.06)",
+  depthTint2:"rgba(195,205,218,0.04)",
+};
+
+/* ═══ Cell SVG (unchanged) ═══ */
+function CellSVG(props){
+  var cell=props.cell,size=props.size,idx=props.idx||0;
+  var c=TC[cell.type],path=PATHS[cell.type],u="c"+cell.id;
+  var dark=cell.type==="tumor"||cell.type==="dying"||cell.type==="infected";
+  return(<svg viewBox="-10 -10 120 120" width={size} height={size} style={{overflow:"visible"}}><defs><radialGradient id={u+"f"} cx={dark?"50%":"32%"} cy={dark?"50%":"32%"} r={dark?"55%":"68%"}>{dark?(<><stop offset="0%" stopColor={c.stops[0]}/><stop offset="60%" stopColor={c.stops[1]}/><stop offset="100%" stopColor={c.stops[2]}/></>):(<><stop offset="0%" stopColor={c.stops[0]}/><stop offset="50%" stopColor={c.stops[1]}/><stop offset="100%" stopColor={c.stops[2]}/></>)}</radialGradient><radialGradient id={u+"h"} cx="28%" cy="28%" r="40%"><stop offset="0%" stopColor={dark?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.6)"}/><stop offset="100%" stopColor="rgba(255,255,255,0)"/></radialGradient><filter id={u+"g"}><feGaussianBlur stdDeviation="6"/></filter><filter id={u+"g2"}><feGaussianBlur stdDeviation="2"/></filter></defs><path d={path} fill={c.glow} filter={"url(#"+u+"g)"} style={{transform:"scale(1.22)",transformOrigin:"50% 50%"}} opacity="0.6"/><path d={path} fill={"url(#"+u+"f)"} stroke={c.sk} strokeWidth="0.5"/><path d={path} fill={"url(#"+u+"h)"}/><path d={path} fill="none" stroke={c.sk} strokeWidth="0.2" opacity="0.25" style={{transform:"scale(0.9)",transformOrigin:"50% 50%"}}/>{!dark&&<ellipse cx="42" cy="44" rx="14" ry="12" fill="rgba(255,255,255,0.3)" filter={"url(#"+u+"g2)"}/>}{dark&&<ellipse cx="50" cy="50" rx="16" ry="14" fill="rgba(0,0,0,0.3)" filter={"url(#"+u+"g2)"}/>}{!dark&&<><circle cx="62" cy="56" r="3.5" fill="rgba(255,255,255,0.2)" filter={"url(#"+u+"g2)"}/><circle cx="56" cy="33" r="2.2" fill="rgba(255,255,255,0.15)" filter={"url(#"+u+"g2)"}/></>}{dark&&<><circle cx="35" cy="62" r="3" fill="rgba(255,255,255,0.04)" filter={"url(#"+u+"g2)"}/><circle cx="65" cy="38" r="2.5" fill="rgba(255,255,255,0.03)" filter={"url(#"+u+"g2)"}/></>}</svg>);
+}
+
+/* ★ 개선 #8+#9: Cell Node — 탭 + 젤리 드래그 인터랙션 */
+function CellNode(props){
+  var cell=props.cell,pos=props.pos,idx=props.idx,onClick=props.onClick,dimmed=props.dimmed,absorbing=props.absorbing;
+  var c=TC[cell.type],sz=pos.s,textBoxSize=sz*0.60;
+
+  var nodeRef=useRef(null);
+  /* 모든 드래그 상태를 ref에 저장 — 리렌더 없이 rAF에서 직접 DOM 조작 */
+  var ds=useRef({
+    dragging:false,startX:0,startY:0,prevOffX:0,prevOffY:0,
+    moved:false,animId:null,vx:0,vy:0,
+    offX:0,offY:0,
+  });
+  /* 리렌더용 트리거 (최소한으로) */
+  var _r=useState(0),forceRender=_r[1];
+
+  var MAX_DRAG=50;
+
+  function applyTransform(ox,oy){
+    var el=nodeRef.current; if(!el) return;
+    var d=Math.sqrt(ox*ox+oy*oy);
+    var sc=1+d*0.0015;
+    var skX=-ox*0.06, skY=-oy*0.06;
+    el.style.transform="translate(-50%,-50%) translate("+ox+"px,"+oy+"px) scale("+sc+") skew("+skX+"deg,"+skY+"deg)";
+  }
+
+  useEffect(function(){
+    var d=ds.current;
+
+    function onMove(e){
+      if(!d.dragging) return;
+      var t=e.touches?e.touches[0]:e;
+      var rawX=d.prevOffX+(t.clientX-d.startX);
+      var rawY=d.prevOffY+(t.clientY-d.startY);
+      var dist=Math.sqrt(rawX*rawX+rawY*rawY);
+      if(dist>MAX_DRAG){rawX=rawX/dist*MAX_DRAG;rawY=rawY/dist*MAX_DRAG;}
+      if(Math.abs(t.clientX-d.startX)>3||Math.abs(t.clientY-d.startY)>3) d.moved=true;
+      d.offX=rawX; d.offY=rawY;
+      applyTransform(rawX,rawY);
+      e.preventDefault();
+    }
+
+    function springBack(){
+      var cx=d.offX,cy=d.offY;
+      var stiffness=0.1,damping=0.7;
+      d.vx=0; d.vy=0;
+      function tick(){
+        d.vx=d.vx*damping+(-cx)*stiffness;
+        d.vy=d.vy*damping+(-cy)*stiffness;
+        cx+=d.vx; cy+=d.vy;
+        if(Math.abs(cx)<0.3&&Math.abs(cy)<0.3&&Math.abs(d.vx)<0.15&&Math.abs(d.vy)<0.15){
+          d.offX=0;d.offY=0;
+          applyTransform(0,0);
+          d.animId=null;
+          /* 스프링 완료 → 플로팅 애니메이션 복원 */
+          var el=nodeRef.current;
+          if(el) el.style.animationName="cf"+cell.id;
+          return;
+        }
+        d.offX=cx; d.offY=cy;
+        applyTransform(cx,cy);
+        d.animId=requestAnimationFrame(tick);
+      }
+      d.animId=requestAnimationFrame(tick);
+    }
+
+    function onUp(){
+      if(!d.dragging&&!d.wasPinch) return;
+      d.dragging=false;
+      var el=nodeRef.current;
+      if(el){
+        el.style.zIndex="2";
+      }
+      /* 핀치 중이었으면 탭 무시 */
+      if(d.wasPinch){
+        d.wasPinch=false;
+        d.offX=0;d.offY=0;
+        applyTransform(0,0);
+        if(el) el.style.animationName="cf"+cell.id;
+        return;
+      }
+      if(!d.moved){
+        d.offX=0;d.offY=0;
+        applyTransform(0,0);
+        if(el) el.style.animationName="cf"+cell.id;
+        onClick(cell);
+      } else {
+        springBack();
+      }
+      forceRender(function(n){return n+1});
+    }
+
+    window.addEventListener("mousemove",onMove,{passive:false});
+    window.addEventListener("mouseup",onUp);
+    window.addEventListener("touchmove",onMove,{passive:false});
+    window.addEventListener("touchend",onUp);
+    return function(){
+      window.removeEventListener("mousemove",onMove);
+      window.removeEventListener("mouseup",onUp);
+      window.removeEventListener("touchmove",onMove);
+      window.removeEventListener("touchend",onUp);
+      if(d.animId) cancelAnimationFrame(d.animId);
+    };
+  },[cell,onClick]);
+
+  function onDown(e){
+    /* 핀치 줌 중이면 세포 터치 무시 — 손가락 1개만 인식 */
+    if(e.touches&&e.touches.length>1) return;
+    var d2=ds.current;
+    d2.wasPinch=false;
+    var t=e.touches?e.touches[0]:e;
+    d2.dragging=true; d2.moved=false;
+    d2.startX=t.clientX; d2.startY=t.clientY;
+    d2.prevOffX=d2.offX; d2.prevOffY=d2.offY;
+    if(d2.animId){cancelAnimationFrame(d2.animId);d2.animId=null;}
+    var el=nodeRef.current;
+    if(el){
+      el.style.zIndex="20";
+      el.style.animationName="none";
+    }
+    /* 핀치 감지: 두번째 손가락이 올라오면 취소 */
+    function onExtraTouch(ev){if(ev.touches.length>1){d2.wasPinch=true;d2.dragging=false;var el2=nodeRef.current;if(el2){el2.style.zIndex="2";el2.style.animationName="cf"+cell.id;}}}
+    window.addEventListener("touchstart",onExtraTouch,{passive:true});
+    function cleanup(){window.removeEventListener("touchstart",onExtraTouch)}
+    window.addEventListener("touchend",cleanup,{once:true});
+    e.preventDefault();
+  }
+
+  var isDragging=ds.current.dragging;
+
+  var hasOrbit=cell.isSubscription||cell.type==="dying"||cell.type==="infected";
+  var orbitColor=c.orbitColor||tds.grey400;
+  var dyingScale=cell.type==="dying"?0.85:1;
+  var dyingFilter=cell.type==="dying"?"grayscale(0.55) brightness(0.9)":"none";
+
+  return(<div
+    ref={nodeRef}
+    style={{
+    position:"absolute",left:pos.x+"%",top:pos.y+"%",width:sz,height:sz,
+    transform:"translate(-50%,-50%)",
+    cursor:"pointer",zIndex:absorbing?10:2,
+    animationName:isDragging?"none":(absorbing?"absorbPulse":"cf"+cell.id),
+    animationDuration:absorbing?"0.8s":(7+cell.id*0.6)+"s",
+    animationTimingFunction:"ease-in-out",
+    animationIterationCount:absorbing?3:"infinite",
+    opacity:dimmed?0.15:1,
+    transition:isDragging?"none":"left 0.8s cubic-bezier(0.4,0,0.2,1), top 0.8s cubic-bezier(0.4,0,0.2,1), opacity 0.4s cubic-bezier(0.4,0,0.2,1)",
+    filter:dimmed?"grayscale(0.6)":(absorbing?"drop-shadow(0 0 16px rgba(24,165,165,0.5))":dyingFilter),
+    WebkitTapHighlightColor:"transparent",
+    touchAction:"none",
+    userSelect:"none",WebkitUserSelect:"none",
+  }}>
+  {/* 터치 히트 영역 — 시각 크기의 2/3, 중앙 정렬 */}
+  <div
+    onMouseDown={onDown}
+    onTouchStart={onDown}
+    style={{
+      position:"absolute",
+      left:"50%",top:"50%",
+      width:Math.round(sz*0.67),height:Math.round(sz*0.67),
+      transform:"translate(-50%,-50%)",
+      zIndex:5,borderRadius:"50%",
+    }}
+  />
+  {/* orbit 고리 — subscription/dying/infected */}
+  {hasOrbit&&!dimmed&&(function(){
+    var isDying=cell.type==="dying";
+    var isInfected=cell.type==="infected";
+    /* dying orbit: 세포에 밀착 (0.85 스케일 세포 대비 +1px) */
+    var orbitSz=isDying?Math.round(sz*0.85)+1:sz+8;
+    var cx=orbitSz/2, cy=orbitSz/2, outerR=orbitSz/2-2, innerR=orbitSz/2-4;
+    /* 2차 세포막 (반투명 fill) — 고리와 세포 사이 채움 */
+    var membraneId="membrane"+cell.id;
+    /* 위성 세포 데이터 — 타입별 차등 */
+    var satellites=isInfected?[]:[
+      {angle:0,   sz:isDying?4:5.5, rx:1.15, ry:1.0,  opacity:isDying?0.3:0.65},
+      {angle:137, sz:isDying?3:4,   rx:1.0,  ry:1.2,  opacity:isDying?0.22:0.5},
+      {angle:251, sz:isDying?2.5:3, rx:1.1,  ry:0.95, opacity:isDying?0.18:0.4},
+    ];
+    return(
+    <div style={{
+      position:"absolute",
+      left:"50%",top:"50%",
+      width:orbitSz,height:orbitSz,
+      transform:"translate(-50%,-50%)",
+      pointerEvents:"none",zIndex:0,
+    }}>
+      <svg width={orbitSz} height={orbitSz} viewBox={"0 0 "+orbitSz+" "+orbitSz} style={{overflow:"visible"}}>
+        <defs>
+          <radialGradient id={membraneId} cx="50%" cy="50%" r="50%">
+            <stop offset="80%" stopColor={orbitColor} stopOpacity="0"/>
+            <stop offset="92%" stopColor={orbitColor} stopOpacity={isDying?0.05:isInfected?0.07:0.1}/>
+            <stop offset="100%" stopColor={orbitColor} stopOpacity={isDying?0.03:isInfected?0.04:0.06}/>
+          </radialGradient>
+        </defs>
+        {/* 2차 세포막 fill */}
+        <circle cx={cx} cy={cy} r={outerR} fill={"url(#"+membraneId+")"} />
+        {/* 궤도 링 — 외곽 */}
+        <circle cx={cx} cy={cy} r={outerR}
+          fill="none" stroke={orbitColor}
+          strokeWidth={isDying?0.8:1}
+          opacity={isDying?0.2:0.3}
+          strokeDasharray={isInfected?"4 3":"none"}
+          style={isInfected?{animationName:"orbitPulse",animationDuration:"2s",animationTimingFunction:"ease-in-out",animationIterationCount:"infinite"}:{}}
+        />
+        {/* 궤도 링 — 내곽 */}
+        {!isInfected&&<circle cx={cx} cy={cy} r={innerR}
+          fill="none" stroke={orbitColor}
+          strokeWidth={0.5}
+          opacity={isDying?0.1:0.15}
+        />}
+      </svg>
+      {/* 궤도 위성 세포들 — subscription/dying (2~3개, 불규칙 형태) */}
+      {satellites.length>0&&(
+        <div style={{
+          position:"absolute",inset:0,
+          animationName:"orbitSpin",
+          animationDuration:isDying?"40s":"12s",
+          animationTimingFunction:"linear",
+          animationIterationCount:"infinite",
+        }}>
+          {satellites.map(function(sat,si){
+            /* 각 위성을 궤도 위에 배치 — angle로 위치, rx/ry로 불규칙 형태 */
+            var rad=sat.angle*Math.PI/180;
+            var orbitR=outerR-1;
+            var satX=cx+Math.cos(rad)*orbitR-sat.sz*sat.rx;
+            var satY=cy+Math.sin(rad)*orbitR-sat.sz*sat.ry;
+            return(
+              <svg key={si} style={{position:"absolute",left:satX,top:satY,overflow:"visible"}}
+                width={sat.sz*2*sat.rx+2} height={sat.sz*2*sat.ry+2}>
+                <defs>
+                  <radialGradient id={"sat"+cell.id+"_"+si} cx="35%" cy="35%" r="65%">
+                    <stop offset="0%" stopColor={orbitColor} stopOpacity={sat.opacity*1.1}/>
+                    <stop offset="100%" stopColor={orbitColor} stopOpacity={sat.opacity*0.3}/>
+                  </radialGradient>
+                </defs>
+                <ellipse cx={sat.sz*sat.rx+1} cy={sat.sz*sat.ry+1}
+                  rx={sat.sz*sat.rx} ry={sat.sz*sat.ry}
+                  fill={"url(#sat"+cell.id+"_"+si+")"}
+                />
+                {/* 위성 세포 하이라이트 */}
+                <ellipse cx={sat.sz*sat.rx*0.7+1} cy={sat.sz*sat.ry*0.7+1}
+                  rx={sat.sz*sat.rx*0.35} ry={sat.sz*sat.ry*0.3}
+                  fill="rgba(255,255,255,0.15)"
+                />
+              </svg>
+            );
+          })}
+        </div>
+      )}
+    </div>
+    );
+  })()}
+  {/* ★ v6: 흡수 중 확장 링 */}
+  {absorbing&&<div style={{
+    position:"absolute",inset:-12,borderRadius:"50%",
+    border:"2px solid "+tds.blue200,
+    animationName:"absorbRing",animationDuration:"1s",
+    animationIterationCount:3,opacity:0,
+  }}/>}
+  <div style={{
+    position:"relative",width:"100%",height:"100%",
+    transform:dyingScale<1?"scale("+dyingScale+")":"none",
+  }}>
+  <div style={{
+    position:"relative",width:"100%",height:"100%",
+    animationName:(dimmed||isDragging)?"none":"pl",animationDuration:c.ps,
+    animationTimingFunction:"ease-in-out",animationIterationCount:"infinite",
+  }}><CellSVG cell={cell} size={sz} idx={idx}/><div style={{
+    position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%)",
+    width:textBoxSize,display:"flex",flexDirection:"column",alignItems:"center",
+    justifyContent:"center",pointerEvents:"none",overflow:"hidden",
+    padding:"0 2px",
+  }}><span style={{
+    fontSize:sz>=125?13:sz>=110?12:11,fontWeight:600,color:c.txt,fontFamily:FF,
+    textAlign:"center",lineHeight:"1.3",
+    textShadow:cell.type==="tumor"||cell.type==="dying"||cell.type==="infected"?"0 1px 6px rgba(0,0,0,0.4)":"none",
+    whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:"100%",
+  }}>{cell.name.replace("\n"," ")}</span>
+  <span style={{fontSize:sz>=110?10:9,marginTop:2,color:c.atxt,fontFamily:FF,fontWeight:500,whiteSpace:"nowrap",maxWidth:"100%",overflow:"hidden",textOverflow:"ellipsis"}}>{fmtCompact(cell.amt)}</span>
+  </div></div></div></div>);
+}
+
+/* ═══ Apoptosis — 4단계 플로우 리팩토링 ═══
+   1단계: 수축 (0.8s) + 절약 미리보기
+   2단계: 외부 해지 페이지 시뮬레이션 (사용자 탭)
+   3단계: 파편화 (1.2s)
+   4단계: 탐식 — 저축 세포 흡수 (1s) + 토스트
+*/
+function ApoptosisView(props){
+  var cell=props.cell,onDone=props.onDone,onClose=props.onClose;
+  /* stg: 0=수축, 1=해지페이지, 2=파편화, 3=탐식, 4=완료 */
+  var _s=useState(0),stg=_s[0],setStg=_s[1];
+  var _fadeAmt=useState(false),fadeAmt=_fadeAmt[0],setFadeAmt=_fadeAmt[1];
+  var serviceName="StreamFlix"; /* 실제 브랜드 사용 금지 */
+
+  /* 1단계: 수축 자동 진행 → 2단계(해지페이지)로 전환 */
+  useEffect(function(){
+    if(stg===0){
+      var t=setTimeout(function(){setStg(1)},1200);
+      return function(){clearTimeout(t)};
+    }
+  },[stg]);
+
+  /* 3단계: 파편화 자동 진행 → 4단계(탐식)로 전환 */
+  useEffect(function(){
+    if(stg===2){
+      var t=setTimeout(function(){setStg(3)},1600);
+      return function(){clearTimeout(t)};
+    }
+  },[stg]);
+
+  /* 4단계: 탐식 → 완료 */
+  useEffect(function(){
+    if(stg===3){
+      var t1=setTimeout(function(){setFadeAmt(true)},500);
+      var t2=setTimeout(function(){onDone()},2800);
+      return function(){clearTimeout(t1);clearTimeout(t2)};
+    }
+  },[stg]);
+
+  /* 해지 버튼 탭 핸들러 */
+  function handleCancel(){
+    setStg(2);
+  }
+
+  /* 파편 데이터 */
+  var fragments=[];
+  for(var fi=0;fi<6;fi++){
+    var fa=fi*Math.PI*2/6+(fi*0.3);
+    fragments.push({
+      id:fi,
+      angle:fa,
+      dist:stg>=3?120+fi*15:35+fi*8,
+      size:8+fi*3,
+      delay:fi*0.08,
+    });
+  }
+
+  return(
+    <div style={{position:"fixed",inset:0,zIndex:950}}>
+
+      {/* ═══ 1단계: 수축 + 절약 미리보기 ═══ */}
+      {stg===0&&(
+        <div style={{position:"absolute",inset:0,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+          <p style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",fontWeight:500,letterSpacing:0.5,color:tds.grey500,marginBottom:sp.xl}}>정리 준비 중</p>
+          {/* 수축 세포 */}
+          <div style={{
+            width:100,height:100,borderRadius:"50%",
+            background:"radial-gradient(circle, rgba(15,15,22,0.85), rgba(80,80,100,0.4))",
+            display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,
+            transition:"all 0.8s ease-in",
+            transform:stg===0?"scale(1)":"scale(0.3)",
+            opacity:1,
+            boxShadow:"0 0 40px rgba(100,100,120,0.15)",
+            marginBottom:sp.xl,
+          }}>
+            <span style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",color:"rgba(220,220,230,0.8)",fontWeight:600}}>{cell.name.replace("\n"," ")}</span>
+          </div>
+          {/* 절약 미리보기 */}
+          <div style={{
+            padding:"12px 28px",borderRadius:14,background:tds.blue50,
+            animationName:"fadeUp",animationDuration:"0.5s",animationFillMode:"both",animationDelay:"0.3s",
+          }}>
+            <span style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",color:tds.blue600,fontWeight:600}}>월 {fmt(cell.amt)} 절약 예상</span>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ 2단계: 외부 해지 페이지 시뮬레이션 ═══ */}
+      {(stg===1||stg===2)&&(
+        cell.id===7?(
+        /* ── Adobe CC 플랜 관리 페이지 ── */
+        <div style={{
+          position:"absolute",inset:0,background:"#fff",zIndex:215,
+          animationName:stg===2?"cancelSlideDown":"cancelSlideUp",
+          animationDuration:stg===2?"0.4s":"0.4s",
+          animationTimingFunction:"ease-out",animationFillMode:"both",
+          display:"flex",flexDirection:"column",
+        }}>
+          {/* 상단 바 — iOS 뒤로가기 + 닫기 */}
+          <div style={{
+            padding:"44px 24px 16px",position:"relative",
+            borderBottom:"1px solid #e5e5e5",
+          }}>
+            {/* iOS 뒤로가기 — 좌상단 */}
+            <div onClick={onClose} style={{
+              position:"absolute",top:14,left:8,
+              display:"flex",alignItems:"center",gap:1,
+              cursor:"pointer",padding:"4px 6px",
+              WebkitTapHighlightColor:"transparent",
+            }}>
+              <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M7 1L1.5 7L7 13" stroke={tds.blue500} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <span style={{fontSize:12,fontWeight:400,color:tds.blue500,fontFamily:FF,marginLeft:2}}>뒤로</span>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+              <span style={{fontSize:26,fontWeight:700,color:"#1a1a1a",letterSpacing:-0.5}}>플랜 관리</span>
+              {/* X 닫기 — 우상단 */}
+              <div onClick={onClose} style={{
+                width:28,height:28,borderRadius:14,
+                display:"flex",alignItems:"center",justifyContent:"center",
+                cursor:"pointer",marginTop:4,
+                WebkitTapHighlightColor:"transparent",
+              }}>
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4.5 4.5L13.5 13.5M13.5 4.5L4.5 13.5" stroke={tds.blue500} strokeWidth="2" strokeLinecap="round"/></svg>
+              </div>
+            </div>
+          </div>
+
+          {/* 스크롤 콘텐츠 */}
+          <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
+
+            {/* ── 내 플랜 섹션 ── */}
+            <div style={{padding:"20px 24px 16px",borderBottom:"1px solid #eee"}}>
+              <span style={{fontSize:16,fontWeight:600,color:"#1a1a1a",display:"block",marginBottom:16}}>내 플랜</span>
+              <div style={{display:"flex",gap:14,alignItems:"flex-start"}}>
+                {/* Adobe CC 아이콘 */}
+                <div style={{width:48,height:48,borderRadius:10,flexShrink:0,overflow:"hidden",
+                  background:"linear-gradient(135deg, #ff0000 0%, #ff7700 25%, #ffcc00 50%, #00cc00 62%, #0099ff 75%, #9933ff 100%)",
+                  display:"flex",alignItems:"center",justifyContent:"center",
+                }}>
+                  <span style={{fontSize:22,fontWeight:700,color:"#fff",textShadow:"0 1px 3px rgba(0,0,0,0.3)"}}>Cc</span>
+                </div>
+                <div style={{flex:1}}>
+                  <span style={{fontSize:17,fontWeight:600,color:"#1a1a1a",display:"block",lineHeight:"24px"}}>Creative Cloud 모든 앱 100GB</span>
+                  <div style={{marginTop:10,display:"flex",flexDirection:"column",gap:6}}>
+                    {["₩26,400/월","클라우드 스토리지: 100GB","2026년 3월 17일부터 구독 중","52개 앱 및 서비스 포함"].map(function(item,i){return(
+                      <div key={i} style={{display:"flex",alignItems:"flex-start",gap:8}}>
+                        <div style={{width:5,height:5,borderRadius:3,background:"#333",flexShrink:0,marginTop:6}}/>
+                        <span style={{fontSize:14,lineHeight:"20px",color:"#555"}}>{item}</span>
+                      </div>
+                    )})}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ── 사용 가능한 액션 섹션 ── */}
+            <div style={{padding:"20px 24px 32px"}}>
+              <span style={{fontSize:16,fontWeight:600,color:"#1a1a1a",display:"block",marginBottom:16}}>사용 가능한 액션</span>
+
+              {/* 카드 1: 더 나은 플랜 찾기 */}
+              <div style={{
+                border:"1px solid #e0e0e0",borderRadius:12,padding:20,marginBottom:12,
+              }}>
+                <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                  <div style={{width:40,height:40,borderRadius:20,background:"#f5f5f5",flexShrink:0,
+                    display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <circle cx="9" cy="9" r="6" stroke="#888" strokeWidth="1.5" fill="none"/>
+                      <path d="M13.5 13.5L17 17" stroke="#888" strokeWidth="1.5" strokeLinecap="round"/>
+                      <path d="M9 6.5V9L10.5 10" stroke="#888" strokeWidth="1.2" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                  <div style={{flex:1}}>
+                    <span style={{fontSize:15,fontWeight:600,color:"#1a1a1a",display:"block"}}>더 나은 플랜 찾기</span>
+                    <p style={{fontSize:13,lineHeight:"19px",color:"#666",margin:"6px 0 14px"}}>
+                      현재 플랜에 포함된 앱이 충분하지 않나요? 월별 결제 금액이 너무 부담되시나요? 나에게 딱 맞는 플랜으로 쉽고 빠르게 변경할 수 있도록 도와드릴게요.
+                    </p>
+                    <button style={{
+                      padding:"10px 24px",borderRadius:20,
+                      border:"1.5px solid #333",background:"transparent",
+                      fontSize:14,fontWeight:600,color:"#1a1a1a",
+                      cursor:"default",opacity:0.5,
+                    }}>플랜 변경</button>
+                  </div>
+                </div>
+              </div>
+
+              {/* 카드 2: 서비스 종료 — 실제 해지 트리거 */}
+              <div style={{
+                border:"1px solid #e0e0e0",borderRadius:12,padding:20,
+              }}>
+                <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                  <div style={{width:40,height:40,borderRadius:20,background:"#f5f5f5",flexShrink:0,
+                    display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <circle cx="10" cy="10" r="7" stroke="#999" strokeWidth="1.5" fill="none"/>
+                      <path d="M7 7l6 6M13 7l-6 6" stroke="#999" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                  <div style={{flex:1}}>
+                    <span style={{fontSize:15,fontWeight:600,color:"#1a1a1a",display:"block"}}>서비스 종료</span>
+                    <p style={{fontSize:13,lineHeight:"19px",color:"#666",margin:"6px 0 14px"}}>
+                      가끔은 그저 중단하기만 해도 될 때가 있습니다.
+                    </p>
+                    <button onClick={handleCancel} style={{
+                      padding:"10px 24px",borderRadius:20,
+                      border:"1.5px solid #333",background:"transparent",
+                      fontSize:14,fontWeight:600,color:"#1a1a1a",
+                      cursor:"pointer",
+                      WebkitTapHighlightColor:"transparent",
+                    }}>플랜 취소</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 하단 URL 바 시뮬레이션 */}
+            <div style={{
+              padding:"12px 16px 24px",borderTop:"1px solid #eee",
+              display:"flex",alignItems:"center",justifyContent:"center",gap:12,
+            }}>
+              <div style={{width:28,height:28,borderRadius:14,border:"1px solid #ddd",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M7 1L3 5l4 4" stroke="#999" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+              <div style={{
+                flex:1,height:32,borderRadius:16,background:"#f2f2f2",
+                display:"flex",alignItems:"center",justifyContent:"center",gap:6,
+                paddingLeft:10,paddingRight:10,
+              }}>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="3" width="10" height="7" rx="1" stroke="#999" strokeWidth="1"/><path d="M3 3V2a3 3 0 016 0v1" stroke="#999" strokeWidth="1" strokeLinecap="round"/></svg>
+                <span style={{fontSize:12,color:"#666",fontWeight:400}}>account.adobe.com</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M9 4L6 8 3 4" stroke="#999" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+              <div style={{width:28,height:28,borderRadius:14,border:"1px solid #ddd",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <svg width="4" height="14" viewBox="0 0 4 14" fill="none"><circle cx="2" cy="2" r="1.5" fill="#999"/><circle cx="2" cy="7" r="1.5" fill="#999"/><circle cx="2" cy="12" r="1.5" fill="#999"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        ):(
+        /* ── 기본(넷플릭스 스타일) 해지 페이지 ── */
+        <div style={{
+          position:"absolute",inset:0,background:"#fff",zIndex:215,
+          animationName:stg===2?"cancelSlideDown":"cancelSlideUp",
+          animationDuration:stg===2?"0.4s":"0.4s",
+          animationTimingFunction:"ease-out",animationFillMode:"both",
+          display:"flex",flexDirection:"column",
+        }}>
+          {/* 해지 페이지 상단 바 (다크) + iOS 뒤로가기 */}
+          <div style={{
+            background:"#1a1a1a",padding:"40px 0 16px",
+            position:"relative",
+          }}>
+            {/* iOS 뒤로가기 — 좌상단 */}
+            <div onClick={onClose} style={{
+              position:"absolute",top:14,left:8,
+              display:"flex",alignItems:"center",gap:1,
+              cursor:"pointer",padding:"4px 6px",
+              WebkitTapHighlightColor:"transparent",
+            }}>
+              <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M7 1L1.5 7l5.5 6" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <span style={{fontSize:12,fontWeight:400,color:"#fff",fontFamily:FF,marginLeft:2}}>뒤로</span>
+            </div>
+            {/* 로고 중앙 */}
+            <div style={{display:"flex",justifyContent:"center"}}>
+              <span style={{fontSize:20,fontWeight:700,color:"#e50914",letterSpacing:2,fontFamily:FF}}>{serviceName.toUpperCase()}</span>
+            </div>
+          </div>
+
+          {/* 안내 문구 */}
+          <div style={{padding:"16px 24px",background:"#f0f0f0",borderBottom:"1px solid #e0e0e0"}}>
+            <p style={{fontSize:13,lineHeight:"18px",color:"#555",margin:0}}>
+              결제 정보를 업데이트하거나, 멤버십 또는 다른 계정 관리 기능을 변경하려면 {serviceName.toLowerCase()}.com의 '계정' 메뉴를 이용하세요.
+            </p>
+          </div>
+
+          {/* 멤버십 & 결제 정보 */}
+          <div style={{flex:1,overflowY:"auto",background:"#fff"}}>
+            <div style={{padding:"20px 24px 12px"}}>
+              <span style={{fontSize:15,fontWeight:600,color:"#333"}}>멤버십 & 결제 정보</span>
+            </div>
+
+            {/* 정보 행들 */}
+            <div style={{padding:"0 24px"}}>
+              {/* 이메일 (블러) */}
+              <div style={{padding:"12px 0",borderBottom:"1px solid #eee"}}>
+                <div style={{width:180,height:14,borderRadius:4,background:"#e0e0e0"}}/>
+              </div>
+              {/* 비밀번호 */}
+              <div style={{padding:"12px 0",borderBottom:"1px solid #eee"}}>
+                <span style={{fontSize:14,color:"#666"}}>비밀번호: ********</span>
+              </div>
+              {/* 전화번호 (블러) */}
+              <div style={{padding:"12px 0",borderBottom:"1px solid #eee"}}>
+                <span style={{fontSize:14,color:"#666"}}>전화번호: </span>
+                <span style={{display:"inline-block",width:100,height:13,borderRadius:3,background:"#e0e0e0",verticalAlign:"middle"}}/>
+              </div>
+
+              {/* 메뉴 행들 */}
+              {["계정 이메일 변경","비밀번호 변경","휴대폰 번호 변경"].map(function(label){return(
+                <div key={label} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 0",borderBottom:"1px solid #eee"}}>
+                  <span style={{fontSize:14,color:"#333"}}>{label}</span>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="#bbb" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </div>
+              )})}
+
+              {/* 결제 정보 */}
+              <div style={{padding:"20px 0 12px"}}>
+                <div style={{padding:"10px 0"}}>
+                  <span style={{fontSize:14,color:"#666"}}>신용카드 </span>
+                  <span style={{display:"inline-block",width:120,height:13,borderRadius:3,background:"#e0e0e0",verticalAlign:"middle"}}/>
+                </div>
+                <div style={{padding:"10px 0",borderBottom:"1px solid #eee"}}>
+                  <span style={{fontSize:14,color:"#666"}}>다음 결제일은 </span>
+                  <span style={{display:"inline-block",width:80,height:13,borderRadius:3,background:"#e0e0e0",verticalAlign:"middle"}}/>
+                  <span style={{fontSize:14,color:"#666"}}> 입니다.</span>
+                </div>
+              </div>
+
+              {/* 결제 상세 정보 */}
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 0",borderBottom:"1px solid #eee"}}>
+                <span style={{fontSize:14,color:"#333"}}>결제 상세 정보</span>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="#bbb" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+            </div>
+
+            {/* ★ 해지 버튼 — 의도적으로 밋밋하게 (다크패턴 재현) */}
+            <div style={{padding:"24px 24px 40px"}}>
+              <button onClick={handleCancel} style={{
+                width:"100%",padding:"14px 0",
+                borderRadius:4,border:"1px solid #ccc",
+                background:"#e6e6e6",color:"#555",
+                fontSize:15,fontWeight:500,
+                cursor:"pointer",
+                fontFamily:FF,
+              }}>멤버십 해지</button>
+            </div>
+          </div>
+        </div>
+        )
+      )}
+
+      {/* ═══ 3~4단계: 파편화 + 탐식 — 해지 페이지 뒤에서 준비됨 ═══ */}
+      {(stg===2||stg===3)&&(
+        <div style={{
+          position:"absolute",inset:0,zIndex:210,
+          background:"rgba(255,255,255,0.95)",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",
+          display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+          animationName:"fadeUp",animationDuration:"0.3s",animationFillMode:"both",
+        }}>
+          {/* 상단 상태 라벨 */}
+          <p style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",fontWeight:500,letterSpacing:0.5,color:tds.grey500,marginBottom:sp.xl}}>
+            {stg===2?"해지 처리 중":"정리 완료"}
+          </p>
+
+          {/* 중앙 비주얼 영역 */}
+          <div style={{position:"relative",width:200,height:200,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:sp.xl}}>
+            {/* 파편들 */}
+            {fragments.map(function(f){
+              var x=Math.cos(f.angle)*f.dist;
+              var y=Math.sin(f.angle)*f.dist;
+              return(
+                <div key={f.id} style={{
+                  position:"absolute",
+                  width:f.size,height:f.size,borderRadius:"50%",
+                  background:stg>=3?"radial-gradient(circle, rgba(144,194,255,0.6), rgba(24,165,165,0.2))":"radial-gradient(circle, rgba(60,60,70,0.7), rgba(100,100,110,0.3))",
+                  left:"calc(50% + "+x+"px)",
+                  top:"calc(50% + "+y+"px)",
+                  transform:"translate(-50%,-50%)",
+                  opacity:stg>=3?0:0.7,
+                  filter:stg===2?"grayscale(0.8)":"none",
+                  transition:"all "+(stg>=3?"1s":"1.2s")+" "+(stg>=3?"ease-out":"linear")+" "+f.delay+"s",
+                }}/>
+              );
+            })}
+
+            {/* 4단계: 정리 완료 — TDS Result 패턴 */}
+            {stg>=3&&(
+              <div style={{
+                width:120,height:120,borderRadius:"50%",
+                background:"radial-gradient(circle, rgba(3,178,108,0.12), rgba(3,178,108,0.03))",
+                border:"2px solid "+tds.green200,
+                display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+                animationName:"fis",animationDuration:"0.8s",
+                boxShadow:"0 0 40px rgba(3,178,108,0.12)",
+                transition:"transform 1s ease-out",
+                transform:"scale(1.1)",
+              }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L19 7" stroke={tds.green500} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                <span style={{
+                  fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",color:tds.green500,fontWeight:600,marginTop:6,
+                  transition:"opacity 1s ease",
+                  opacity:fadeAmt?0:1,
+                }}>-{fmt(cell.amt)}/월</span>
+              </div>
+            )}
+          </div>
+
+          {/* 진행 단계 — 더 굵은 도트, 더 큰 텍스트 */}
+          <div style={{display:"flex",flexDirection:"column",gap:sp.md}}>
+            {["해지 페이지 연결","구독 해지 완료","절약 확정"].map(function(l,i){
+              var done=(stg===2&&i<=1)||(stg>=3&&i<=2);
+              var active=(stg===2&&i===1)||(stg>=3&&i===2);
+              return(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:sp.sm+sp.xs}}>
+                  <div style={{width:10,height:10,borderRadius:5,transition:"all 0.4s",background:done?(active?tds.blue500:tds.grey500):tds.grey200}}/>
+                  <span style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",fontWeight:done?500:400,transition:"color 0.4s",color:done?(active?tds.blue600:tds.grey700):tds.grey300,fontFamily:FF}}>{l}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══ Small Components ═══ */
+
+function LegendItem(props){
+  var type=props.type,active=props.active,filtering=props.filtering,onTap=props.onTap;
+  var c=TC[type];
+  var isDefault=!filtering,isActive=filtering&&active;
+  /* TDS Badge weak 패턴: 기본=neutral, 선택 시만 컬러 */
+  var bgColor=isActive?c.lc:(filtering?"rgba(0,0,0,0.04)":"transparent");
+  var txtColor=isActive?"#fff":(isDefault?tds.grey600:tds.grey400);
+  var dotColor=c.lc||tds.grey400;
+  return(
+    <button onClick={onTap} style={{
+      padding:"5px 9px",borderRadius:14,border:"none",background:bgColor,
+      cursor:"pointer",transition:"all 0.12s ease",whiteSpace:"nowrap",
+      WebkitTapHighlightColor:"transparent",minHeight:28,
+      display:"flex",alignItems:"center",gap:4,
+    }}>
+      <div style={{width:5,height:5,borderRadius:3,background:isActive?"#fff":dotColor,flexShrink:0,opacity:isActive?0.9:(isDefault?0.7:0.35),transition:"all 0.12s"}}/>
+      <span style={{fontSize:typo.sub11.s,fontWeight:isActive?600:500,color:txtColor,fontFamily:FF,transition:"color 0.15s"}}>{c.lbl}</span>
+    </button>
+  );
+}
+
+/* ═══ TDS-style Compact Top Banner (긴급 알림) ═══
+   토스 앱 패턴: 컨텐츠 최상단 풀너비 슬림 배너
+   - 1줄 텍스트, 최소 높이 (36px)
+   - 좌측 컬러 도트(pulse) + 텍스트 + 우측 chevron
+   - 배경: orange50, 보더 없음 (깔끔함 우선)
+   - borderRadius: 8px (TDS sm 패턴)
+*/
+function ImmuneAlert(props){
+  var cells=props.cells,onTap=props.onTap;
+  var inf=cells.filter(function(c){return c.type==="infected"});
+  if(inf.length===0) return null;
+  var cell=inf[0];
+  return(
+    <div onClick={function(){onTap(cell)}} style={{
+      display:"flex",alignItems:"center",gap:sp.sm,
+      padding:sp.sm+"px "+sp.md+"px",borderRadius:8,cursor:"pointer",
+      background:tds.orange50,
+      marginBottom:sp.sm,
+    }}>
+      {/* Pulse dot */}
+      <div style={{position:"relative",width:8,height:8,flexShrink:0}}>
+        <div style={{width:8,height:8,borderRadius:4,background:tds.orange500}}/>
+        <div style={{position:"absolute",inset:-3,borderRadius:7,border:"1.5px solid "+tds.orange400,animationName:"pulseRing",animationDuration:"2s",animationIterationCount:"infinite",opacity:0.4}}/>
+      </div>
+      {/* Single line: name + context */}
+      <span style={{
+        flex:1,minWidth:0,
+        fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",
+        color:"#e45600",fontWeight:600,
+        whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+      }}>
+        {cell.name.replace("\n"," ")}
+        <span style={{fontWeight:400,color:tds.grey500,marginLeft:4,fontSize:typo.sub11.s}}>{cell.freq}</span>
+      </span>
+      {/* Chevron */}
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{flexShrink:0}}><path d="M6 4l4 4-4 4" stroke={tds.grey400} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    </div>
+  );
+}
+
+function Toast(props){
+  if(!props.show) return null;
+  return(
+    <div style={{
+      position:"fixed",bottom:40,left:"50%",transform:"translateX(-50%)",
+      padding:"12px 20px",borderRadius:24,background:tds.grey900,color:"#fff",
+      fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",fontWeight:600,
+      zIndex:300,boxShadow:"0 8px 32px rgba(0,0,0,0.18)",
+      animationName:"toastIn",animationDuration:"0.3s",
+      display:"flex",alignItems:"center",gap:sp.sm,fontFamily:FF,
+    }}>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 8l3 3 5-6" stroke={tds.green400} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      {props.message}
+    </div>
+  );
+}
+
+/* ═══ Detail Bottom Sheet — 단일 스크롤 플로우 ═══
+   토스 원칙: Tap & Scroll — 탭 분절 대신 자연스러운 스크롤
+   의료 프레임: 상태 확인 → 진단 → 처방 → 실행 (1장 스크롤)
+   
+   통일 규칙:
+   - 모든 카드: borderRadius 12, padding 16px
+   - 섹션 간격: 24px (lg)
+   - 카드 내 간격: 8px (sm)
+   - CTA: 하단 1개만 (중복 없음)
+   - 폰트: 섹션 라벨 sub12/600/grey400, 본문 t6/400/grey600
+*/
+function DetailView(props){
+  var cell=props.cell,onClose=props.onClose,onApo=props.onApo;
+  var c=TC[cell.type];
+  var catBudget=BUDGETS.cats[cell.cat]||0;
+  var budgetRatio=catBudget>0?Math.round(cell.amt/catBudget*100):0;
+  var ratioColor=budgetRatio>100?tds.red500:budgetRatio>80?tds.orange500:tds.grey600;
+  var isActionable=cell.type==="dying"||cell.type==="infected"||cell.type==="tumor";
+  /* #3: 상세 분석 토글 상태 */
+  var _detail=useState(false),showDetail=_detail[0],setShowDetail=_detail[1];
+
+  /* CTA 텍스트 결정 */
+  var ctaLabel=cell.type==="infected"?"즉시 정리하기":cell.type==="dying"?"깔끔 정리 시작":cell.type==="tumor"?"지출 줄이기 — 한도 설정":null;
+  var ctaBg=tds.blue500;
+
+  return(
+    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(25,31,40,0.45)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:100}}>
+      <div onClick={function(e){e.stopPropagation()}} style={{
+        width:"100%",maxWidth:390,maxHeight:742,
+        background:tds.bg,borderRadius:"24px 24px 0 0",
+        boxShadow:"0 -4px 40px rgba(0,0,0,0.08)",
+        animationName:"su",animationDuration:"0.3s",animationTimingFunction:"ease-out",
+        position:"relative",overflow:"hidden",
+        display:"flex",flexDirection:"column",
+      }}>
+        {/* 바텀시트 미세 노이즈 텍스처 */}
+        <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none",zIndex:0,opacity:0.2}}>
+          <defs><filter id="detailNoise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch" result="noise"/><feColorMatrix type="saturate" values="0" in="noise" result="gray"/><feComponentTransfer in="gray"><feFuncA type="linear" slope="0.04"/></feComponentTransfer></filter></defs>
+          <rect width="100%" height="100%" filter="url(#detailNoise)"/>
+        </svg>
+
+        {/* Grabber */}
+        <div style={{display:"flex",justifyContent:"center",padding:"12px 0 0",background:tds.bg,borderRadius:"24px 24px 0 0",zIndex:5,flexShrink:0}}>
+          <div style={{width:36,height:4,borderRadius:2,background:tds.grey300}}/>
+        </div>
+
+        {/* ═══ 스크롤 가능한 콘텐츠 영역 ═══ */}
+        <div style={{flex:1,overflowY:"auto",padding:sp.md+"px "+sp.lg+"px "+(isActionable?"16px":"40px"),position:"relative",zIndex:1}}>
+
+          {/* ═══ #1: 헤더 — 좌측 정렬, 텍스트 위계 ═══ */}
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:sp.lg}}>
+            <div>
+              <div style={{marginBottom:sp.sm}}>
+                <span style={{padding:"3px 8px",borderRadius:6,fontSize:typo.sub11.s,lineHeight:typo.sub11.h+"px",fontWeight:600,background:c.badge,color:c.badgeTxt}}>{c.lbl}</span>
+              </div>
+              <h2 style={{fontSize:typo.t3.s,lineHeight:typo.t3.h+"px",fontWeight:700,color:tds.grey900,margin:0}}>{cell.name.replace("\n"," ")}</h2>
+              <p style={{fontSize:typo.t5.s,lineHeight:typo.t5.h+"px",color:tds.grey800,margin:"4px 0 0",fontWeight:600}}>
+                {fmt(cell.amt)}<span style={{fontSize:typo.t7.s,fontWeight:400,color:tds.grey500,marginLeft:2}}>/월</span>
+              </p>
+            </div>
+            <button onClick={onClose} style={{width:32,height:32,borderRadius:16,border:"none",background:tds.grey100,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0,flexShrink:0,marginTop:2}}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4l8 8" stroke={tds.grey500} strokeWidth="1.8" strokeLinecap="round"/></svg>
+            </button>
+          </div>
+
+          {/* ═══ 상태 — 3컬럼 스탯 ═══ */}
+          <div style={{borderRadius:12,overflow:"hidden",display:"flex",marginBottom:sp.lg,background:tds.grey50}}>
+            {[{l:"마지막 사용",v:cell.last||"-"},{l:"빈도",v:cell.freq},{l:cell.isSubscription?"사용률":"예산 대비",v:cell.isSubscription?(cell.usageRate||0)+"%":budgetRatio+"%",color:cell.isSubscription?(cell.usageRate>=70?tds.grey800:tds.orange500):ratioColor}].map(function(x,i){return(
+              <div key={i} style={{flex:1,padding:"14px 0",display:"flex",flexDirection:"column",alignItems:"center",gap:sp.xs,borderLeft:i>0?"1px solid "+tds.grey200:"none"}}>
+                <span style={{fontSize:typo.sub11.s,lineHeight:typo.sub11.h+"px",color:tds.grey500,fontWeight:400}}>{x.l}</span>
+                <span style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",fontWeight:600,color:x.color||tds.grey800}}>{x.v}</span>
+              </div>
+            )})}
+          </div>
+
+          {/* ═══ 진단 섹션 ═══ */}
+          <div style={{marginBottom:sp.lg}}>
+            <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",fontWeight:400,color:tds.grey400,display:"block",marginBottom:sp.sm}}>AI 진단 결과</span>
+            <div style={{padding:sp.md,borderRadius:12,background:tds.grey50}}>
+              <p style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",color:tds.grey700,margin:0}}>{cell.diag}</p>
+              {!showDetail&&(
+                <button onClick={function(){setShowDetail(true)}} style={{
+                  marginTop:sp.sm+4,padding:0,border:"none",background:"none",cursor:"pointer",
+                  display:"flex",alignItems:"center",gap:4,
+                  WebkitTapHighlightColor:"transparent",
+                }}>
+                  <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",color:tds.blue500,fontWeight:500,fontFamily:FF}}>상세 분석 보기</span>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke={tds.blue500} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </button>
+              )}
+              {showDetail&&(
+                <div style={{marginTop:sp.sm+4,paddingTop:sp.sm+4,borderTop:"1px solid "+tds.grey200,
+                  animationName:"fadeUp",animationDuration:"0.25s",animationFillMode:"both",
+                }}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:sp.xs}}>
+                    <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",fontWeight:400,color:tds.grey400}}>상세 분석</span>
+                    <button onClick={function(){setShowDetail(false)}} style={{padding:0,border:"none",background:"none",cursor:"pointer",display:"flex",alignItems:"center",WebkitTapHighlightColor:"transparent"}}>
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 7.5l3-3 3 3" stroke={tds.grey400} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </button>
+                  </div>
+                  <p style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",color:tds.grey500,margin:0}}>{cell.diagDetail}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ═══ 처방 섹션 (비정상 세포만) ═══ */}
+          {isActionable&&<div>
+            <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",fontWeight:400,color:tds.grey400,display:"block",marginBottom:sp.sm}}>처방</span>
+            <div style={{padding:sp.md,borderRadius:12,background:tds.blue50,marginBottom:sp.sm}}>
+              <p style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",color:tds.blue600,margin:0,fontWeight:500}}>{cell.rx}</p>
+            </div>
+            <div style={{padding:sp.md,borderRadius:12,background:tds.grey50}}>
+              {cell.rxSteps.map(function(step,i){return(
+                <div key={i} style={{display:"flex",gap:sp.sm+4}}>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",flexShrink:0}}>
+                    <div style={{width:24,height:24,borderRadius:12,background:tds.blue50,border:"1.5px solid "+tds.blue200,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <span style={{fontSize:typo.sub11.s,fontWeight:600,color:tds.blue500}}>{i+1}</span>
+                    </div>
+                    {i<cell.rxSteps.length-1&&<div style={{width:1.5,height:14,background:tds.blue200,marginTop:2}}/>}
+                  </div>
+                  <div style={{paddingTop:2,paddingBottom:i<cell.rxSteps.length-1?sp.sm:0}}>
+                    <span style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",color:tds.grey700}}>{step}</span>
+                  </div>
+                </div>
+              )})}
+            </div>
+          </div>}
+
+        </div>{/* 스크롤 영역 끝 */}
+
+        {/* ═══ CTA 고정 푸터 — 상세 분석 펼쳐도 항상 하단 고정 ═══ */}
+        {isActionable&&(
+          <div style={{flexShrink:0,padding:"0 "+sp.lg+"px "+sp.lg+"px",background:tds.bg,position:"relative",zIndex:5}}>
+            {/* 페이드 그라디언트 — 스크롤 콘텐츠와 자연스러운 연결 */}
+            <div style={{position:"absolute",top:-24,left:0,right:0,height:24,background:"linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1))",pointerEvents:"none"}}/>
+            <button className="btn-press" onClick={cell.type==="tumor"||cell.type==="infected"?undefined:onApo} style={{
+              width:"100%",padding:"16px 0",borderRadius:12,border:"none",
+              background:cell.type==="infected"?tds.grey200:ctaBg,color:cell.type==="infected"?tds.grey400:"#fff",
+              fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",fontWeight:600,
+              cursor:cell.type==="infected"?"default":"pointer",fontFamily:FF,
+            }}>{ctaLabel}</button>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+/* ═══ Main App ═══ */
+function CellfAppInner(){
+  var _sel=useState(null),sel=_sel[0],setSel=_sel[1];
+  var _apo=useState(null),apo=_apo[0],setApo=_apo[1];
+  var _cells=useState(CELLS),cells=_cells[0],setCells=_cells[1];
+  var _intro=useState(true),intro=_intro[0],setIntro=_intro[1];
+  var _activeTypes=useState(null),activeTypes=_activeTypes[0],setActiveTypes=_activeTypes[1];
+  var _toast=useState(null),toast=_toast[0],setToast=_toast[1];
+  var _notify=useState(false),showNotify=_notify[0],setShowNotify=_notify[1];
+  var _overview=useState(false),showOverview=_overview[0],setShowOverview=_overview[1];
+  var _filterOpen=useState(false),filterOpen=_filterOpen[0],setFilterOpen=_filterOpen[1];
+  var _zoom=useState(1),zoom=_zoom[0],setZoom=_zoom[1];
+  var _pan=useState({x:0,y:0}),pan=_pan[0],setPan=_pan[1];
+  var _absorb=useState(null),absorb=_absorb[0],setAbsorb=_absorb[1];
+  var _tab=useState("home"),tab=_tab[0],setTab=_tab[1];
+  var _reportMonth=useState(3),reportMonth=_reportMonth[0],setReportMonth=_reportMonth[1];
+  var pinchRef=useRef({dist0:0,zoom0:1});
+  var panRef=useRef({panning:false,startX:0,startY:0,prevX:0,prevY:0});
+  var scopeRef=useRef(null);
+
+  useEffect(function(){var t=setTimeout(function(){setIntro(false)},2800);return function(){clearTimeout(t)}},[]);
+
+  var totalAmt=cells.reduce(function(a,c){return a+c.amt},0);
+  var budgetPct=BUDGETS.total>0?Math.round(totalAmt/BUDGETS.total*100):0;
+  var sb=SCOPE_BG;
+
+  function toggleType(type){
+    setActiveTypes(function(prev){
+      if(prev===null){var s={};s[type]=true;return s}
+      var next=Object.assign({},prev);
+      if(next[type]){delete next[type];if(Object.keys(next).length===0) return null;return next}
+      else{next[type]=true;if(Object.keys(next).length===5) return null;return next}
+    });
+  }
+  function isTypeActive(type){return activeTypes===null||(activeTypes&&activeTypes[type])}
+  function doApo(){setApo(sel);setSel(null)}
+  function doneApo(){
+    var name=apo.name.replace("\n"," "),amt=apo.amt;
+    setCells(function(p){return p.filter(function(c){return c.id!==apo.id})});
+    setApo(null);setToast(name+" 정리 완료 · 월 "+fmt(amt)+" 절약");
+    setTimeout(function(){setToast(null)},3000);
+  }
+
+  var legendTypes=["subscription","tumor","dying","infected"];
+
+  /* ★ 줌 + 패닝 핸들러 */
+  var ZOOM_MIN=0.55,ZOOM_MAX=1.8;
+  /* 패닝 한계: 줌 배율에 비례하여 확장 */
+  function clampPan(px,py,z){
+    var maxP=(z-1)*50; /* 줌 1x→0, 1.5x→25%, 1.8x→40% 이동 가능 */
+    if(maxP<0) maxP=0;
+    return{x:Math.max(-maxP,Math.min(maxP,px)),y:Math.max(-maxP,Math.min(maxP,py))};
+  }
+  function handleWheel(e){
+    e.preventDefault();
+    var delta=-e.deltaY*0.002;
+    setZoom(function(z){
+      var nz=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,z+delta));
+      /* 줌 아웃 시 패닝 한계 자동 보정 */
+      if(nz<=1) setPan({x:0,y:0});
+      else setPan(function(p){return clampPan(p.x,p.y,nz)});
+      return nz;
+    });
+  }
+  /* 패닝 — 빈 공간 드래그 (줌>1 시) */
+  function handleScopeDown(e){
+    /* 세포 위에서 시작된 드래그는 CellNode가 처리 */
+    if(e.target!==e.currentTarget&&e.target.tagName!=="DIV") return;
+    if(zoom<=1) return;
+    var t=e.touches?e.touches[0]:e;
+    if(e.touches&&e.touches.length===2) return; /* 핀치는 별도 */
+    var pr=panRef.current;
+    pr.panning=true; pr.startX=t.clientX; pr.startY=t.clientY;
+    pr.prevX=pan.x; pr.prevY=pan.y;
+    e.preventDefault();
+  }
+  useEffect(function(){
+    var el=scopeRef.current; if(!el) return;
+    var pr=panRef.current;
+    function onPanMove(e){
+      if(!pr.panning) return;
+      var t=e.touches?e.touches[0]:e;
+      if(e.touches&&e.touches.length===2){pr.panning=false;return;}
+      var dx=(t.clientX-pr.startX)/zoom;
+      var dy=(t.clientY-pr.startY)/zoom;
+      var np=clampPan(pr.prevX+dx*0.28,pr.prevY+dy*0.28,zoom);
+      setPan(np);
+      e.preventDefault();
+    }
+    function onPanUp(){pr.panning=false}
+    function handleTouchStart(e){
+      if(e.touches.length===2){
+        pr.panning=false;
+        var dx2=e.touches[0].clientX-e.touches[1].clientX;
+        var dy2=e.touches[0].clientY-e.touches[1].clientY;
+        pinchRef.current.dist0=Math.sqrt(dx2*dx2+dy2*dy2);
+        pinchRef.current.zoom0=zoom;
+      }
+    }
+    function handleTouchMove(e){
+      if(e.touches.length===2){
+        e.preventDefault();
+        var dx2=e.touches[0].clientX-e.touches[1].clientX;
+        var dy2=e.touches[0].clientY-e.touches[1].clientY;
+        var dist=Math.sqrt(dx2*dx2+dy2*dy2);
+        var ratio=dist/pinchRef.current.dist0;
+        var nz=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,pinchRef.current.zoom0*ratio));
+        setZoom(nz);
+        if(nz<=1) setPan({x:0,y:0});
+        else setPan(function(p){return clampPan(p.x,p.y,nz)});
+      }
+    }
+    el.addEventListener("wheel",handleWheel,{passive:false});
+    el.addEventListener("touchstart",handleTouchStart,{passive:true});
+    el.addEventListener("touchmove",handleTouchMove,{passive:false});
+    window.addEventListener("mousemove",onPanMove,{passive:false});
+    window.addEventListener("mouseup",onPanUp);
+    window.addEventListener("touchmove",onPanMove,{passive:false});
+    window.addEventListener("touchend",onPanUp);
+    return function(){
+      el.removeEventListener("wheel",handleWheel);
+      el.removeEventListener("touchstart",handleTouchStart);
+      el.removeEventListener("touchmove",handleTouchMove);
+      window.removeEventListener("mousemove",onPanMove);
+      window.removeEventListener("mouseup",onPanUp);
+      window.removeEventListener("touchmove",onPanMove);
+      window.removeEventListener("touchend",onPanUp);
+    };
+  },[zoom,pan]);
+  var magLabel="×"+Math.round(120*zoom);
+
+  /* ★ 개선 #4: 요약+인사이트 통합 데이터 */
+  var sums=[
+    {l:"유료 전환",t:"infected",trend:null,trendColor:tds.orange500},
+    {l:"미사용 구독",t:"dying",trend:null,trendColor:tds.grey500},
+    {l:"과소비",t:"tumor",trend:"+32%",trendColor:"#c44bd7"},
+    {l:"지출",t:"subscription",trend:null,trendColor:tds.blue400},
+  ];
+
+  /* ★ 동적 배치: cells 변화 시 자동 재계산 */
+  var posMap=calcPositions(cells);
+
+  var kfStr="";
+  cells.forEach(function(c){
+    var seed=c.id;
+    kfStr+="@keyframes cf"+c.id+"{0%,100%{transform:translate(-50%,-50%) translateY(0) translateX(0)}25%{transform:translate(-50%,-50%) translateY("+(-3.5-seed*0.6)+"px) translateX("+(1.5+seed*0.4)+"px)}50%{transform:translate(-50%,-50%) translateY("+(-0.6+seed*0.2)+"px) translateX("+(-1.8-seed*0.2)+"px)}75%{transform:translate(-50%,-50%) translateY("+(2.5+seed*0.4)+"px) translateX("+(0.8+seed*0.3)+"px)}}\n";
+  });
+
+  return(
+    <div style={{minHeight:"100%",background:tds.bg,fontFamily:FF,position:"relative",overflow:"hidden",maxWidth:"100%"}}>
+
+      <style>{
+        kfStr+
+        "@keyframes pl{0%,100%{opacity:0.9;transform:scale(1)}50%{opacity:1;transform:scale(1.02)}}\n"+
+        "@keyframes fis{from{opacity:0;transform:scale(0.5)}to{opacity:1;transform:scale(1)}}\n"+
+        "@keyframes su{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}\n"+
+        "@keyframes cancelSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}\n"+
+        "@keyframes cancelSlideDown{from{transform:translateY(0);opacity:1}to{transform:translateY(100%);opacity:1}}\n"+
+        "@keyframes ir{0%{opacity:0}10%{opacity:1}78%{opacity:1}100%{opacity:0}}\n"+
+        "@keyframes pulseRing{0%{transform:scale(1);opacity:0.5}100%{transform:scale(1.8);opacity:0}}\n"+
+        "@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}\n"+
+        "@keyframes phPulseGentle{0%,100%{opacity:0.7;transform:scale(1)}50%{opacity:1;transform:scale(1.15)}}\n"+
+        "@keyframes phPulseAlert{0%,100%{opacity:0.6;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}\n"+
+        "@keyframes absorbPulse{0%{transform:translate(-50%,-50%) scale(1)}40%{transform:translate(-50%,-50%) scale(1.18)}100%{transform:translate(-50%,-50%) scale(1.06)}}\n"+
+        "@keyframes absorbRing{0%{transform:scale(0.8);opacity:0.6}100%{transform:scale(1.6);opacity:0}}\n"+
+        "@keyframes orbitSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}\n"+
+        "@keyframes orbitPulse{0%,100%{opacity:0}50%{opacity:0.5}}\n"+
+        "@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}\n"+
+        "@keyframes fadeIn{from{opacity:0}to{opacity:1}}\n"+
+        "@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}\n"+
+        "@keyframes filterExpand{from{opacity:0;transform:scaleX(0);transform-origin:left center}to{opacity:1;transform:scaleX(1);transform-origin:left center}}\n"+
+        "@keyframes introCell{0%{opacity:0;transform:scale(0.3)}40%{opacity:0.6;transform:scale(1.1)}100%{opacity:0.35;transform:scale(1)}}\n"+
+        "@keyframes introText1{0%,25%{opacity:0;transform:translateY(8px)}40%,85%{opacity:1;transform:translateY(0)}100%{opacity:0}}\n"+
+        "@keyframes introText2{0%,35%{opacity:0;transform:translateY(8px)}50%,85%{opacity:1;transform:translateY(0)}100%{opacity:0}}\n"+
+        "@keyframes introText3{0%,45%{opacity:0;transform:translateY(8px)}60%,85%{opacity:1;transform:translateY(0)}100%{opacity:0}}\n"+
+        "@keyframes introLens{0%{opacity:0.8;transform:scale(2)}60%{opacity:0.3;transform:scale(1)}100%{opacity:0;transform:scale(0.8)}}\n"+
+        ".btn-press{transition:transform 0.1s ease,box-shadow 0.1s ease}\n"+
+        ".btn-press:active{transform:scale(0.97)!important}\n"+
+        "*{box-sizing:border-box;margin:0;padding:0}\n"+
+        "::-webkit-scrollbar{width:0px}"
+      }</style>
+
+      {/* ═══ Intro Splash ═══ */}
+      {intro&&<div style={{position:"fixed",inset:0,background:tds.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",zIndex:999}}>
+        {/* 렌즈 포커싱 원 */}
+        <div style={{position:"absolute",width:280,height:280,borderRadius:"50%",
+          border:"1.5px solid "+tds.grey200,
+          animationName:"introLens",animationDuration:"2.8s",animationFillMode:"forwards",
+        }}/>
+        {/* 배경 세포 — 건강 */}
+        <div style={{position:"absolute",top:"28%",left:"22%",
+          animationName:"introCell",animationDuration:"2s",animationFillMode:"forwards",animationDelay:"0.1s",opacity:0,
+        }}>
+          <CellSVG cell={{type:"subscription",id:100}} size={48} idx={100}/>
+        </div>
+        {/* 배경 세포 — 종양 */}
+        <div style={{position:"absolute",top:"58%",right:"20%",
+          animationName:"introCell",animationDuration:"2s",animationFillMode:"forwards",animationDelay:"0.3s",opacity:0,
+        }}>
+          <CellSVG cell={{type:"tumor",id:101}} size={36} idx={101}/>
+        </div>
+        {/* 배경 세포 — 구독 */}
+        <div style={{position:"absolute",bottom:"30%",left:"30%",
+          animationName:"introCell",animationDuration:"2s",animationFillMode:"forwards",animationDelay:"0.5s",opacity:0,
+        }}>
+          <CellSVG cell={{type:"subscription",id:102}} size={32} idx={102}/>
+        </div>
+        {/* 텍스트 — 순차 등장 */}
+        <p style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",letterSpacing:2,color:tds.grey400,marginBottom:sp.sm,fontWeight:500,fontFamily:FF,
+          animationName:"introText1",animationDuration:"2.8s",animationFillMode:"forwards",opacity:0,
+        }}>소비 세포 관찰 시작</p>
+        <h1 style={{fontSize:48,lineHeight:"56px",fontWeight:700,color:tds.grey900,letterSpacing:-2,margin:0,
+          animationName:"introText2",animationDuration:"2.8s",animationFillMode:"forwards",opacity:0,
+        }}>Cellf</h1>
+        <p style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",color:tds.grey500,marginTop:sp.md,
+          animationName:"introText3",animationDuration:"2.8s",animationFillMode:"forwards",opacity:0,
+        }}>내 소비를 세포로 보고, AI로 치료한다</p>
+      </div>}
+
+      {/* ═══════════════════════════════════════
+          BLOCK 1: 현미경 히어로 (풀블리드)
+          — 헤더, 레전드 모두 이 안에 오버레이
+          — 화면 최상단부터 시작, One Thing 지배
+      ═══════════════════════════════════════ */}
+      <div ref={scopeRef} onMouseDown={handleScopeDown} onTouchStart={function(e){if(e.touches.length===1&&zoom>1)handleScopeDown(e)}} style={{
+        position:"relative",width:"100%",height:445,overflow:"hidden",
+        display:tab==="home"?"block":"none",
+        background:tds.grey50,
+        boxShadow:"none",
+        transition:"box-shadow 1.2s ease",
+        animationName:"fadeUp",animationDuration:"0.6s",animationFillMode:"both",
+        cursor:zoom>1?(panRef.current.panning?"grabbing":"grab"):"default",
+      }}>
+        {/* 배양액 틴트 */}
+        <div style={{position:"absolute",inset:0,background:sb.tint,pointerEvents:"none",zIndex:0}}/>
+        {/* 깊이감 그라디언트 */}
+        <div style={{
+          position:"absolute",inset:0,pointerEvents:"none",zIndex:0,
+          background:"radial-gradient(ellipse 80% 80% at 35% 40%, "+sb.depthTint+" 0%, transparent 70%), "
+            +"radial-gradient(ellipse 60% 50% at 70% 65%, "+sb.depthTint2+" 0%, transparent 60%), "
+            +"radial-gradient(ellipse 120% 120% at 50% 50%, transparent 40%, rgba(0,0,0,0.02) 100%)",
+        }}/>
+        {/* 노이즈 텍스처 */}
+        <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none",zIndex:0,opacity:0.35}}>
+          <defs><filter id="cultureMediumNoise"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" stitchTiles="stitch" result="noise"/><feColorMatrix type="saturate" values="0" in="noise" result="gray"/><feComponentTransfer in="gray"><feFuncA type="linear" slope="0.06"/></feComponentTransfer></filter></defs>
+          <rect width="100%" height="100%" filter="url(#cultureMediumNoise)"/>
+        </svg>
+        {/* 그리드 */}
+        <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient("+sb.gridTint+" 1px, transparent 1px), linear-gradient(90deg, "+sb.gridTint+" 1px, transparent 1px)",backgroundSize:(50*zoom)+"px "+(50*zoom)+"px",pointerEvents:"none",zIndex:1,transition:"background-size 0.3s ease"}}/>
+        {/* 비네팅 */}
+        <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,"+(sb.vignetteOpacity+0.03)+") 100%)",pointerEvents:"none",zIndex:12}}/>
+        {/* 코스틱 */}
+        <div style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:1,opacity:0.04,
+          background:"radial-gradient(ellipse 25% 20% at 28% 32%, rgba(255,255,255,0.8) 0%, transparent 100%), "
+            +"radial-gradient(ellipse 20% 15% at 68% 55%, rgba(255,255,255,0.6) 0%, transparent 100%), "
+            +"radial-gradient(ellipse 15% 25% at 45% 78%, rgba(255,255,255,0.5) 0%, transparent 100%)",
+        }}/>
+
+        {/* ── 오버레이: 상단 헤더 (현미경 안) ── */}
+        <div style={{
+          position:"absolute",top:0,left:0,right:0,zIndex:14,
+          padding:"52px "+sp.lg+"px 8px",
+          display:"flex",justifyContent:"space-between",alignItems:"center",
+          pointerEvents:"none",
+          background:"linear-gradient(to bottom, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.7) 70%, rgba(255,255,255,0.3) 100%)",
+          backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",
+          borderBottom:"1px solid rgba(255,255,255,0.5)",
+        }}>
+          <div style={{display:"flex",alignItems:"center",gap:sp.sm,pointerEvents:"auto"}}>
+            <span style={{fontSize:typo.t4.s,lineHeight:typo.t4.h+"px",fontWeight:700,color:tds.grey800,letterSpacing:-0.3}}>3월 소비</span>
+            <span onClick={function(){setShowOverview(true)}} style={{
+              padding:"4px 8px",borderRadius:8,
+              fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",fontWeight:500,
+              background:"rgba(255,255,255,0.75)",backdropFilter:"blur(8px)",
+              color:budgetPct>90?tds.red500:budgetPct>70?tds.orange500:tds.grey600,
+              cursor:"pointer",
+              WebkitTapHighlightColor:"transparent",
+            }}>예산 {budgetPct}%</span>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:sp.sm,pointerEvents:"auto"}}>
+            {/* 벨 — 감염 세포 있으면 red dot 표시 */}
+            <div onClick={function(){if(cells.some(function(c){return c.type==="infected"}))setShowNotify(!showNotify)}} style={{width:36,height:36,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:18,background:"none",cursor:"pointer",position:"relative"}}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" stroke={tds.grey600} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M13.73 21a2 2 0 01-3.46 0" stroke={tds.grey600} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              {cells.some(function(c){return c.type==="infected"})&&<div style={{position:"absolute",top:6,right:6,width:7,height:7,borderRadius:4,background:tds.red500}}/>}
+            </div>
+          </div>
+        </div>
+
+        {/* ── 알림 드롭다운 (TDS Toast/Dialog 패턴) ── */}
+        {showNotify&&(function(){
+          var inf=cells.filter(function(c){return c.type==="infected"});
+          if(inf.length===0) return null;
+          return(
+            <div style={{position:"absolute",top:92,right:sp.lg,zIndex:20,width:260,
+              background:"#fff",borderRadius:16,
+              boxShadow:"0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)",
+              padding:sp.md,
+              animationName:"fadeUp",animationDuration:"0.2s",animationFillMode:"both",
+            }}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:sp.sm}}>
+                <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",fontWeight:600,color:tds.grey900}}>긴급 알림</span>
+                <button onClick={function(){setShowNotify(false)}} style={{padding:0,border:"none",background:"none",cursor:"pointer",WebkitTapHighlightColor:"transparent"}}>
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4l8 8" stroke={tds.grey400} strokeWidth="1.5" strokeLinecap="round"/></svg>
+                </button>
+              </div>
+              {inf.map(function(c){return(
+                <div key={c.id} onClick={function(){setSel(c);setShowNotify(false)}} style={{
+                  display:"flex",alignItems:"flex-start",gap:sp.sm+2,
+                  padding:"12px 0",cursor:"pointer",
+                  borderTop:"1px solid "+tds.grey100,
+                }}>
+                  {/* 도트 — 1행 텍스트 세로 중앙 정렬 */}
+                  <div style={{width:8,height:8,borderRadius:4,background:tds.orange500,flexShrink:0,marginTop:5}}/>
+                  <div style={{flex:1,minWidth:0}}>
+                    <span style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",fontWeight:600,color:tds.grey900,display:"block"}}>{c.name.replace("\n"," ")}</span>
+                    <span style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",color:tds.orange500,fontWeight:500,marginTop:2,display:"block"}}>{c.freq}</span>
+                  </div>
+                </div>
+              )})}
+            </div>
+          );
+        })()}
+
+        {/* ── 오버레이: 줌 리셋 — 우하단, 필터와 대칭 ── */}
+        {zoom>1.05&&(
+          <button onClick={function(){setZoom(1);setPan({x:0,y:0})}} style={{
+            position:"absolute",bottom:14,right:sp.lg,zIndex:15,
+            width:38,height:38,borderRadius:19,border:"none",
+            background:"rgba(255,255,255,0.82)",
+            backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
+            boxShadow:"0 1px 8px rgba(0,0,0,0.06)",
+            display:"flex",alignItems:"center",justifyContent:"center",
+            cursor:"pointer",padding:0,
+            WebkitTapHighlightColor:"transparent",
+            animationName:"fadeIn",animationDuration:"0.2s",animationFillMode:"both",
+          }}>
+            <span style={{fontSize:12,fontWeight:600,color:tds.grey600,fontFamily:MONO,letterSpacing:-0.5}}>1×</span>
+          </button>
+        )}
+
+        {/* ── 필터 (현미경 하단) — 닫힘: 좌하단 아이콘, 열림: 풀너비 바 ── */}
+        {!filterOpen&&(
+          <button onClick={function(){setFilterOpen(true)}} style={{
+            position:"absolute",bottom:14,left:sp.lg,zIndex:15,
+            width:38,height:38,borderRadius:19,border:"none",
+            background:"rgba(255,255,255,0.82)",
+            backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
+            boxShadow:"0 1px 8px rgba(0,0,0,0.06)",
+            display:"flex",alignItems:"center",justifyContent:"center",
+            cursor:"pointer",padding:0,
+            WebkitTapHighlightColor:"transparent",
+          }}>
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+              <path d="M1.5 3h13M4 8h8M6 13h4" stroke={activeTypes!==null?tds.blue500:tds.grey500} strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
+            {activeTypes!==null&&<div style={{position:"absolute",top:6,right:6,width:6,height:6,borderRadius:3,background:tds.blue500,border:"1.5px solid rgba(255,255,255,0.9)"}}/>}
+          </button>
+        )}
+        {filterOpen&&(
+          <div style={{
+            position:"absolute",bottom:14,left:sp.lg,zIndex:15,
+            height:38,borderRadius:19,
+            background:"rgba(255,255,255,0.82)",
+            backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
+            boxShadow:"0 1px 8px rgba(0,0,0,0.06)",
+            display:"inline-flex",alignItems:"center",gap:0,
+            padding:"0 8px 0 0",
+            animationName:"fadeUp",animationDuration:"0.15s",animationFillMode:"both",
+          }}>
+            {/* 좌측 아이콘 — 필터 비활성: 닫기(필터), 필터 활성: 초기화(X) */}
+            <button onClick={function(){if(activeTypes!==null){setActiveTypes(null)}else{setFilterOpen(false)}}} style={{
+              width:34,height:34,borderRadius:17,border:"none",
+              background:activeTypes!==null?"rgba(0,0,0,0.06)":"transparent",
+              display:"flex",alignItems:"center",justifyContent:"center",
+              cursor:"pointer",padding:0,flexShrink:0,marginLeft:2,
+              WebkitTapHighlightColor:"transparent",
+            }}>
+              {activeTypes!==null?(
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 2l6 6M8 2l-6 6" stroke={tds.grey500} strokeWidth="1.4" strokeLinecap="round"/></svg>
+              ):(
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1.5 3h13M4 8h8M6 13h4" stroke={tds.grey500} strokeWidth="1.4" strokeLinecap="round"/></svg>
+              )}
+            </button>
+            {/* 칩들 */}
+            <div style={{display:"flex",gap:2,alignItems:"center",minWidth:0}}>
+              {legendTypes.map(function(type){return(
+                <LegendItem key={type} type={type} active={isTypeActive(type)} filtering={activeTypes!==null} onTap={function(){toggleType(type)}}/>
+              )})}
+            </div>
+          </div>
+        )}
+
+        {/* ── 세포 줌+패닝 레이어 ── */}
+        <div style={{
+          position:"absolute",inset:0,zIndex:2,
+          transform:"scale("+zoom+") translate("+pan.x+"%,"+pan.y+"%)",
+          transformOrigin:"50% 50%",
+          transition:panRef.current.panning?"none":"transform 0.15s ease-out",
+        }}>
+        {cells.map(function(c){
+          var dimmed=activeTypes!==null&&!activeTypes[c.type];
+          var pos=posMap[c.id];
+          if(!pos) return null;
+          var isAbsorbing=false;
+          return <CellNode key={c.id} cell={c} pos={pos} idx={c.id} onClick={setSel} dimmed={dimmed} absorbing={isAbsorbing}/>;
+        })}
+        </div>
+      </div>
+
+      {/* ═══════════════════════════════════════
+          BLOCK 2: 스크롤 컨텐츠 영역
+          — 현미경 아래, 여유로운 패딩
+      ═══════════════════════════════════════ */}
+      <div style={{padding:sp.md+"px "+sp.lg+"px 108px",position:"relative",display:tab==="home"?"block":"none"}}>
+
+        {/* ── 이번 달 요약 — TDS ListHeader 패턴 ── */}
+        <div style={{
+          animationName:"fadeUp",animationDuration:"0.5s",animationFillMode:"both",
+          animationDelay:"0.4s",
+        }}>
+          <div style={{marginBottom:sp.sm}}>
+            {/* upper: 보조설명 */}
+            <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",fontWeight:400,color:tds.grey500,display:"block",marginBottom:2}}>3월 기준</span>
+            {/* title + right row */}
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <span style={{fontSize:typo.t5.s,lineHeight:typo.t5.h+"px",fontWeight:700,color:tds.grey900}}>이번 달 요약</span>
+            </div>
+          </div>
+
+          {sums.map(function(s,i){
+            var tc=TC[s.t];
+            var total=cells.filter(function(c){return c.type===s.t}).reduce(function(a,c){return a+c.amt},0);
+            var count=cells.filter(function(c){return c.type===s.t}).length;
+            if(count===0) return null;
+            var amtStr=String(total).replace(/\B(?=(\d{3})+(?!\d))/g,",");
+            return(
+              <div key={s.t}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 0"}}>
+                  {/* 좌측: 도트 + 라벨 + 트렌드 */}
+                  <div style={{display:"flex",alignItems:"center",gap:sp.sm,minWidth:0}}>
+                    <div style={{width:8,height:8,borderRadius:4,background:tc.lc||tds.grey400,flexShrink:0}}/>
+                    <span style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",color:tds.grey600,fontWeight:400}}>{s.l}</span>
+                    {s.trend&&<span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",color:s.trendColor,fontWeight:500,marginLeft:2}}>{s.trend}</span>}
+                  </div>
+                  {/* 우측: 금액 — 숫자 t5/600, 원 t7/400 */}
+                  <span style={{flexShrink:0}}>
+                    <span style={{fontSize:typo.t5.s,lineHeight:typo.t5.h+"px",fontWeight:600,color:tds.grey900}}>{amtStr}</span>
+                    <span style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",fontWeight:400,color:tds.grey400,marginLeft:1}}>원</span>
+                  </span>
+                </div>
+                {i<sums.length-1&&<div style={{height:1,background:tds.grey100,marginLeft:20}}/>}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ── 인사이트 카드 (동적 계산) ── */}
+        {(function(){
+          var cleanable=cells.filter(function(c){return c.type==="dying"||c.type==="infected"});
+          if(cleanable.length===0) return null;
+          var totalSave=cleanable.reduce(function(a,c){return a+c.amt},0);
+          return(
+            <div style={{
+              marginTop:sp.md,padding:sp.md+"px "+sp.lg+"px",borderRadius:16,
+              background:tds.blue50,
+              animationName:"fadeUp",animationDuration:"0.5s",animationFillMode:"both",
+              animationDelay:"0.6s",
+            }}>
+              <p style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",color:tds.blue600,margin:0,fontWeight:500}}>
+                정리 가능한 {cleanable.length}개를 처리하면 월 <span style={{fontWeight:600}}>{fmt(totalSave)}</span> 절약
+              </p>
+            </div>
+          );
+        })()}
+
+      </div>
+
+      {tab==="home"&&sel&&<DetailView cell={sel} onClose={function(){setSel(null)}} onApo={doApo}/>}
+      {tab==="home"&&apo&&<ApoptosisView cell={apo} onDone={doneApo} onClose={function(){setSel(apo);setApo(null)}}/>}
+
+      {/* ═══ 생태계 오버뷰 바텀시트 ═══ */}
+      {showOverview&&(function(){
+        var tumorCells=cells.filter(function(c){return c.type==="tumor"});
+        var dyingCells=cells.filter(function(c){return c.type==="dying"});
+        var infectedCells=cells.filter(function(c){return c.type==="infected"});
+        var healthyCells=cells.filter(function(c){return c.type==="subscription"});
+        var tumorAmt=tumorCells.reduce(function(a,c){return a+c.amt},0);
+        var dyingAmt=dyingCells.reduce(function(a,c){return a+c.amt},0);
+        var infectedAmt=infectedCells.reduce(function(a,c){return a+c.amt},0);
+        var saveable=dyingAmt+infectedAmt;
+        /* 상태 판정 */
+        var grade=budgetPct>90?"danger":budgetPct>70?"caution":"good";
+        var gradeColor=grade==="danger"?tds.red500:grade==="caution"?tds.orange500:tds.blue500;
+        var gradeTitle=grade==="danger"?"지출이 많은 달이에요":grade==="caution"?"조금 신경 쓰면 좋겠어요":"전반적으로 괜찮아요";
+        var gradeDesc=grade==="danger"?"예산의 90%를 넘겼어요. 남은 기간 동안 지출을 줄여보는 건 어떨까요?"
+          :grade==="caution"?"예산의 70%를 넘겼어요. 아직 여유가 있지만 속도 조절이 필요해요."
+          :"예산 범위 안에서 잘 쓰고 있어요. 이 페이스 유지하면 돼요.";
+
+        /* 인사이트 항목 생성 */
+        var insights=[];
+        if(tumorCells.length>0) insights.push({
+          icon:"📈",color:"#c44bd7",bg:"#f3e8ff",
+          title:tumorCells.map(function(c){return c.name}).join(", ")+"에서 과소비가 감지됐어요",
+          desc:"총 "+fmt(tumorAmt)+"으로 예산을 초과하고 있어요.",
+        });
+        if(dyingCells.length>0) insights.push({
+          icon:"💤",color:tds.grey600,bg:tds.grey100,
+          title:dyingCells.length+"개 구독을 안 쓰고 있어요",
+          desc:"정리하면 월 "+fmt(dyingAmt)+"을 아낄 수 있어요.",
+        });
+        if(infectedCells.length>0) insights.push({
+          icon:"⏰",color:tds.orange500,bg:tds.orange50,
+          title:"곧 유료로 바뀌는 구독이 있어요",
+          desc:infectedCells[0].name+" — "+infectedCells[0].freq+". 지금 확인해보세요.",
+        });
+        if(healthyCells.length>0) insights.push({
+          icon:"✓",color:tds.blue500,bg:tds.blue50,
+          title:healthyCells.length+"개 지출은 정상 범위예요",
+          desc:"큰 변동 없이 안정적으로 유지되고 있어요.",
+        });
+
+        return(
+          <div style={{position:"fixed",inset:0,zIndex:900}}>
+            {/* dim */}
+            <div onClick={function(){setShowOverview(false)}} style={{
+              position:"absolute",inset:0,background:"rgba(25,31,40,0.45)",
+              animationName:"fadeIn",animationDuration:"0.2s",animationFillMode:"both",
+            }}/>
+            {/* 시트 */}
+            <div style={{
+              position:"absolute",bottom:0,left:0,right:0,
+              background:tds.bg,borderRadius:"20px 20px 0 0",
+              maxHeight:680,
+              animationName:"sheetUp",animationDuration:"0.35s",animationTimingFunction:"cubic-bezier(0.32,0.72,0,1)",animationFillMode:"both",
+              display:"flex",flexDirection:"column",
+            }}>
+              {/* 핸들 */}
+              <div style={{display:"flex",justifyContent:"center",padding:"10px 0 4px"}}>
+                <div style={{width:36,height:4,borderRadius:2,background:tds.grey200}}/>
+              </div>
+
+              {/* 스크롤 영역 */}
+              <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"4px "+sp.lg+"px "+sp.xl+"px"}}>
+
+                {/* 상태 헤더 — TDS AmountTop 패턴 */}
+                <div style={{marginBottom:sp.lg}}>
+                  {/* 상단 라벨 */}
+                  <span style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",fontWeight:400,color:tds.grey500,display:"block",marginBottom:sp.xs}}>3월 소비 예산</span>
+                  {/* 히어로 — TDS t3 스케일, 숫자+% 인라인 */}
+                  <span style={{fontSize:26,lineHeight:"34px",fontWeight:700,color:tds.grey900,display:"block"}}>{budgetPct}%<span style={{fontSize:typo.t6.s,fontWeight:500,color:tds.grey400,marginLeft:6}}>사용</span></span>
+
+                  {/* TDS ProgressBar normal — height 8, borderRadius 4 */}
+                  <div style={{marginTop:sp.md,marginBottom:sp.sm}}>
+                    <div style={{height:8,borderRadius:4,background:tds.grey100,overflow:"hidden"}}>
+                      <div style={{height:"100%",borderRadius:4,width:Math.min(budgetPct,100)+"%",background:gradeColor,transition:"width 0.5s ease-out"}}/>
+                    </div>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between"}}>
+                    <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",color:tds.grey500,fontWeight:400}}>{fmt(totalAmt)}</span>
+                    <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",color:tds.grey400,fontWeight:400}}>{fmt(BUDGETS.total)}</span>
+                  </div>
+
+                  {/* 상태 메시지 카드 */}
+                  <div style={{
+                    marginTop:sp.md,padding:"14px "+sp.md+"px",borderRadius:12,
+                    background:tds.grey50,
+                  }}>
+                    <span style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",fontWeight:600,color:tds.grey800,display:"block",marginBottom:2}}>{gradeTitle}</span>
+                    <span style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",fontWeight:400,color:tds.grey500}}>{gradeDesc}</span>
+                  </div>
+                </div>
+
+                {/* 구분선 */}
+                <div style={{height:1,background:tds.grey100,marginBottom:sp.md}}/>
+
+                {/* 인사이트 리스트 */}
+                <div style={{marginBottom:sp.xs}}>
+                  <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",fontWeight:400,color:tds.grey500,display:"block",marginBottom:2}}>3월 기준</span>
+                  <span style={{fontSize:typo.t5.s,lineHeight:typo.t5.h+"px",fontWeight:700,color:tds.grey900,display:"block",marginBottom:sp.sm}}>세포 진단 요약</span>
+                </div>
+
+                {insights.map(function(ins,i){return(
+                  <div key={i} style={{
+                    display:"flex",gap:sp.md-2,
+                    padding:sp.md+"px 0",
+                    borderTop:i===0?"none":"1px solid "+tds.grey100,
+                  }}>
+                    <div style={{
+                      width:36,height:36,borderRadius:10,background:ins.bg,flexShrink:0,
+                      display:"flex",alignItems:"center",justifyContent:"center",
+                      fontSize:16,
+                    }}>{ins.icon}</div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <span style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",fontWeight:600,color:tds.grey900,display:"block"}}>{ins.title}</span>
+                      <span style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",fontWeight:400,color:tds.grey500,display:"block",marginTop:2}}>{ins.desc}</span>
+                    </div>
+                  </div>
+                )})}
+
+                {/* 절약 가능 금액 */}
+                {saveable>0&&(
+                  <div style={{
+                    marginTop:sp.md,padding:sp.md,borderRadius:12,
+                    background:tds.blue50,
+                    display:"flex",alignItems:"center",justifyContent:"space-between",
+                  }}>
+                    <span style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",fontWeight:400,color:tds.blue600}}>지금 정리하면 아낄 수 있는 금액</span>
+                    <span style={{fontSize:typo.t5.s,lineHeight:typo.t5.h+"px",fontWeight:700,color:tds.blue500}}>월 {fmt(saveable)}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* 닫기 버튼 */}
+              <div style={{flexShrink:0,padding:sp.md+"px "+sp.lg+"px "+(sp.lg+8)+"px"}}>
+                <button onClick={function(){setShowOverview(false)}} style={{
+                  width:"100%",padding:"16px 0",borderRadius:12,border:"none",
+                  background:tds.blue500,color:"#fff",
+                  fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",fontWeight:600,
+                  cursor:"pointer",fontFamily:FF,
+                  WebkitTapHighlightColor:"transparent",
+                }}>확인했어요</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+      <Toast show={!!toast} message={toast}/>
+
+      {/* ═══ 리포트 탭 ═══ */}
+      {tab==="report"&&(
+        <div style={{padding:"52px "+sp.lg+"px 108px",minHeight:"100%"}}>
+          {/* 월 네비게이터 */}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:sp.xl}}>
+            <button onClick={function(){setReportMonth(function(m){return Math.max(1,m-1)})}} style={{width:32,height:32,borderRadius:16,border:"none",background:tds.grey100,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8l4 4" stroke={tds.grey500} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </button>
+            <div style={{textAlign:"center"}}>
+              <span style={{fontSize:typo.t4.s,lineHeight:typo.t4.h+"px",fontWeight:700,color:tds.grey900}}>2026년 {reportMonth}월</span>
+              {reportMonth===3&&<span style={{display:"block",fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",color:tds.blue500,fontWeight:500,marginTop:2}}>이번 달</span>}
+            </div>
+            <button onClick={function(){setReportMonth(function(m){return Math.min(3,m+1)})}} style={{width:32,height:32,borderRadius:16,border:"none",background:reportMonth>=3?tds.grey50:tds.grey100,cursor:reportMonth>=3?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke={reportMonth>=3?tds.grey300:tds.grey500} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </button>
+          </div>
+
+          {/* 총 지출 카드 */}
+          <div style={{padding:sp.lg+"px",borderRadius:16,background:tds.grey50,marginBottom:sp.lg}}>
+            <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",color:tds.grey400,fontWeight:500}}>총 지출</span>
+            <div style={{display:"flex",alignItems:"baseline",gap:6,marginTop:sp.xs}}>
+              <span style={{fontSize:28,lineHeight:"36px",fontWeight:700,color:tds.grey900,letterSpacing:-0.5}}>{fmt(totalAmt)}</span>
+              <span style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",color:tds.grey400,fontWeight:400}}>/ {fmt(BUDGETS.total)}</span>
+            </div>
+            {/* 프로그레스 바 — 슬림 */}
+            <div style={{height:4,borderRadius:2,background:tds.grey200,marginTop:sp.sm+4}}>
+              <div style={{height:"100%",borderRadius:2,width:Math.min(budgetPct,100)+"%",background:budgetPct>90?tds.red500:budgetPct>70?tds.orange500:tds.grey600,transition:"width 0.5s ease-out"}}/>
+            </div>
+            {/* 전월 비교 인라인 */}
+            <div style={{display:"flex",alignItems:"center",gap:sp.xs+2,marginTop:sp.sm+4}}>
+              <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",fontWeight:600,color:tds.green500}}>-11%</span>
+              <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",color:tds.grey400}}>지난달 대비</span>
+            </div>
+          </div>
+
+          {/* 카테고리별 — TDS ListRow 패턴 */}
+          <span style={{fontSize:typo.t5.s,lineHeight:typo.t5.h+"px",fontWeight:700,color:tds.grey900,display:"block",marginBottom:sp.md}}>카테고리별</span>
+          <div style={{borderRadius:16,background:tds.grey50,overflow:"hidden"}}>
+            {Object.keys(BUDGETS.cats).map(function(cat,i,arr){
+              var catAmt=cells.filter(function(c){return c.cat===cat}).reduce(function(a,c){return a+c.amt},0);
+              var catBudget=BUDGETS.cats[cat];
+              var pct=catBudget>0?Math.round(catAmt/catBudget*100):0;
+              var isOver=pct>100;
+              var barColor=isOver?tds.red500:pct>80?tds.orange500:tds.grey500;
+              return(
+                <div key={cat}>
+                  <div style={{padding:"14px "+sp.md+"px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                    {/* 좌: 카테고리명 + 바 */}
+                    <div style={{flex:1,marginRight:sp.md}}>
+                      <span style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",color:tds.grey700,fontWeight:500}}>{cat}</span>
+                      <div style={{height:3,borderRadius:1.5,background:tds.grey200,marginTop:6,maxWidth:160}}>
+                        <div style={{height:"100%",borderRadius:1.5,width:Math.min(pct,100)+"%",background:barColor}}/>
+                      </div>
+                    </div>
+                    {/* 우: 금액 */}
+                    <div style={{textAlign:"right",flexShrink:0}}>
+                      <span style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",color:isOver?tds.red500:tds.grey900,fontWeight:600}}>{fmt(catAmt)}</span>
+                      <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",color:tds.grey400,marginLeft:4}}>/ {fmt(catBudget)}</span>
+                    </div>
+                  </div>
+                  {i<arr.length-1&&<div style={{height:1,background:tds.grey200,marginLeft:sp.md,marginRight:sp.md}}/>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ MY 탭 ═══ */}
+      {tab==="my"&&(
+        <div style={{padding:"52px "+sp.lg+"px 108px",minHeight:"100%"}}>
+          <span style={{fontSize:typo.t4.s,lineHeight:typo.t4.h+"px",fontWeight:700,color:tds.grey900,display:"block",marginBottom:sp.lg}}>설정</span>
+
+          {/* 예산 요약 카드 */}
+          <div style={{padding:sp.md+4+"px "+sp.md+"px",borderRadius:16,background:tds.grey50,marginBottom:sp.md}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:sp.md}}>
+              <span style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",fontWeight:600,color:tds.grey900}}>월 예산</span>
+              <span style={{fontSize:typo.t5.s,lineHeight:typo.t5.h+"px",fontWeight:700,color:tds.grey900}}>{fmt(BUDGETS.total)}</span>
+            </div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:sp.xs+2}}>
+              {Object.keys(BUDGETS.cats).map(function(cat){
+                var pct=Math.round(BUDGETS.cats[cat]/BUDGETS.total*100);
+                return(
+                  <span key={cat} style={{padding:"4px 10px",borderRadius:12,background:tds.bg,fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",color:tds.grey600,fontWeight:500}}>{cat} {pct}%</span>
+                );
+              })}
+            </div>
+            <span style={{display:"block",fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",color:tds.grey400,marginTop:sp.sm+4}}>균형형 프리셋 적용 중</span>
+          </div>
+
+          {/* 설정 메뉴 */}
+          {["예산 수정","알림 설정","데이터 초기화"].map(function(label,i){
+            return(
+              <div key={label} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 0",borderBottom:i<2?"1px solid "+tds.grey100:"none"}}>
+                <span style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",color:tds.grey800,fontWeight:500}}>{label}</span>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke={tds.grey400} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ═══ 하단 플로팅 pill 탭바 — 상세/정리 중 숨김 ═══ */}
+      {!intro&&!sel&&!apo&&<div style={{
+        position:"fixed",bottom:28,left:"50%",transform:"translateX(-50%)",
+        zIndex:200,
+        display:"flex",alignItems:"center",gap:0,
+        height:56,borderRadius:28,
+        padding:"0 8px",
+        background:"rgba(255,255,255,0.72)",
+        backdropFilter:"blur(20px) saturate(180%)",
+        WebkitBackdropFilter:"blur(20px) saturate(180%)",
+        boxShadow:"0 2px 20px rgba(0,0,0,0.08), 0 0 0 0.5px rgba(0,0,0,0.06)",
+      }}>
+        {[
+          {id:"report",icon:function(active){return(<svg width="24" height="24" viewBox="0 0 20 20" fill="none"><rect x="3" y="10" width="3.5" height="7" rx="1" fill={active?tds.blue500:tds.grey400}/><rect x="8.25" y="6" width="3.5" height="11" rx="1" fill={active?tds.blue500:tds.grey400}/><rect x="13.5" y="3" width="3.5" height="14" rx="1" fill={active?tds.blue500:tds.grey400}/></svg>)}},
+          {id:"home",icon:function(active){return(<svg width="24" height="24" viewBox="0 0 20 20" fill="none"><path d="M3 8.5L10 3l7 5.5V16a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 013 16V8.5z" stroke={active?tds.blue500:tds.grey400} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>)}},
+          {id:"my",icon:function(active){return(<svg width="24" height="24" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke={active?tds.blue500:tds.grey400} strokeWidth="1.6" fill="none"/><path d="M3.5 17.5c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5" stroke={active?tds.blue500:tds.grey400} strokeWidth="1.6" strokeLinecap="round" fill="none"/></svg>)}},
+        ].map(function(t){
+          var active=tab===t.id;
+          /* report/my 탭은 코드 유지하되 전환 비활성 */
+          var disabled=t.id!=="home";
+          return(
+            <button key={t.id} onClick={disabled?undefined:function(){setTab(t.id)}} style={{
+              display:"flex",alignItems:"center",justifyContent:"center",
+              padding:"10px 22px",border:"none",borderRadius:24,
+              cursor:disabled?"default":"pointer",
+              background:active?"rgba(24,165,165,0.08)":"transparent",
+              transition:"background 0.15s ease",
+              WebkitTapHighlightColor:"transparent",
+              height:44,
+              opacity:disabled?0.45:1,
+            }}>
+              {t.icon(active)}
+            </button>
+          );
+        })}
+      </div>}
+    </div>
+  );
+}
+
+/* ═══ Onboarding — Category Colors ═══ */
+function obFmt(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,",")}
+
+function OBPresetCard(props){
+  var preset=props.preset,isSel=props.selected,budget=props.budget,entering=props.entering,idx=props.idx,onClick=props.onClick,customTapped=props.customTapped;
+  var isCustom=preset.id==="custom";
+
+  /* Key differentiator per preset */
+  var highlight=null;
+  if(!isCustom&&preset.ratios){
+    var lifeAmt=Math.round(budget*(preset.ratios["생활"]||0));
+    var lifePct=Math.round((preset.ratios["생활"]||0)*100);
+    highlight={pct:lifePct,amt:lifeAmt};
+  }
+
+  return(
+    <button onClick={onClick} className="btn-press" style={{
+      width:"100%",textAlign:"left",
+      padding:sp.md+"px",
+      borderRadius:16,
+      border:"1.5px solid "+(isSel?tds.blue500:tds.grey200),
+      background:isSel?tds.blue50:"#fff",
+      cursor:"pointer",fontFamily:FF,position:"relative",
+      transition:"border-color 0.2s ease, background 0.2s ease",
+      animationName:entering?"obCardUp":"none",animationDuration:"0.35s",
+      animationDelay:(0.08+idx*0.07)+"s",animationFillMode:"both",animationTimingFunction:"ease",
+    }}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <div style={{flex:1,minWidth:0}}>
+          {/* Title — t5 700: clearly dominant */}
+          <div style={{fontSize:typo.t5.s,lineHeight:typo.t5.h+"px",fontWeight:700,color:tds.grey900}}>{preset.label}</div>
+          {/* Desc — sub12 400: clearly subordinate, tighter to title */}
+          <div style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",fontWeight:400,color:tds.grey500,marginTop:3}}>{preset.desc}</div>
+          {/* Selected highlight — blue accent stat */}
+          {isSel&&highlight&&(
+            <div style={{marginTop:8,fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",color:tds.blue500,fontWeight:600,
+              animationName:"obLabelFade",animationDuration:"0.2s",animationFillMode:"both"}}>
+              생활비 {highlight.pct}% · {obFmt(highlight.amt)}원
+            </div>
+          )}
+          {isCustom&&customTapped&&(
+            <div style={{marginTop:6,fontSize:typo.sub12.s,color:tds.grey400,fontWeight:400,
+              animationName:"obLabelFade",animationDuration:"0.2s"}}>아직 준비 중이에요</div>
+          )}
+        </div>
+        {/* Radio — check or empty circle */}
+        {isSel?(
+          <div style={{width:24,height:24,borderRadius:12,background:tds.blue500,
+            display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:sp.md,
+            animationName:"obCheckPop",animationDuration:"0.25s"}}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-7" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </div>
+        ):(
+          <div style={{width:24,height:24,borderRadius:12,border:"1.5px solid "+tds.grey300,flexShrink:0,marginLeft:sp.md}}/>
+        )}
+      </div>
+    </button>
+  );
+}
+
+/* Step 1: Budget Input */
+function OBStepBudget(props){
+  var onNext=props.onNext;
+  var _amt=useState(""),amount=_amt[0],setAmount=_amt[1];
+  var _enter=useState(false),entering=_enter[0],setEntering=_enter[1];
+  useEffect(function(){setTimeout(function(){setEntering(true)},100)},[]);
+
+  function handleKey(key){setAmount(function(p){var n=p+key;if(Number(n)>9999999)return p;return n})}
+  function handleBack(){setAmount(function(p){return p.slice(0,-1)})}
+  function handleQuick(val){setAmount(function(p){var n=Number(p||"0")+val;if(n>9999999)return p;return String(n)})}
+
+  var numVal=Number(amount||"0");
+  var fmtNum=String(numVal).replace(/\B(?=(\d{3})+(?!\d))/g,",");
+  var displayAmt=numVal>0?fmtNum+"원":"0원";
+  var isValid=numVal>=100000;
+  var keys=[1,2,3,4,5,6,7,8,9,"00",0,"back"];
+
+  return(
+    <div style={{display:"flex",flexDirection:"column",height:"100%",
+      opacity:entering?1:0,transform:entering?"translateY(0)":"translateY(16px)",
+      transition:"opacity 0.5s ease, transform 0.5s ease",fontFamily:FF}}>
+      <div style={{flex:1,display:"flex",flexDirection:"column",padding:"0 "+sp.lg+"px"}}>
+        {/* Title — matches Step 2 hierarchy, clears status bar */}
+        <div style={{paddingTop:80}}>
+          <div style={{fontSize:typo.t3.s,lineHeight:typo.t3.h+"px",fontWeight:700,color:tds.grey900,marginBottom:sp.sm}}>예산 설정</div>
+          <div style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",color:tds.grey500,fontWeight:400,marginBottom:sp.xl}}>매달 얼마 정도 쓰시나요?</div>
+        </div>
+        {/* Amount display */}
+        <div style={{fontSize:28,lineHeight:"38px",fontWeight:700,color:numVal>0?tds.grey900:tds.grey300,marginBottom:sp.lg,transition:"color 0.2s ease"}}>
+          {displayAmt}
+          <span style={{display:"inline-block",width:2,height:28,background:tds.blue500,marginLeft:2,verticalAlign:"middle",animationName:"obBlink",animationDuration:"1s",animationIterationCount:"infinite",animationTimingFunction:"step-end"}}/>
+        </div>
+        <div style={{display:"flex",gap:sp.sm}}>
+          {[300000,500000,1000000].map(function(v){return(
+            <button key={v} onClick={function(){handleQuick(v)}} className="btn-press" style={{
+              padding:"8px 14px",borderRadius:20,border:"none",background:tds.grey50,color:tds.grey700,
+              fontSize:typo.t7.s,fontWeight:500,fontFamily:FF,cursor:"pointer",
+            }}>{"+"+(v/10000)+"만"}</button>
+          )})}
+        </div>
+        {numVal>0&&numVal<100000&&(
+          <div style={{marginTop:sp.md,fontSize:typo.sub12.s,color:tds.red400,fontWeight:400}}>최소 10만원 이상 입력해주세요</div>
+        )}
+      </div>
+      <div style={{flexShrink:0,paddingBottom:sp.lg}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:0,padding:"0 "+sp.md+"px"}}>
+          {keys.map(function(k,i){return(
+            <button key={i} onClick={function(){if(k==="back")handleBack();else handleKey(String(k))}} className="btn-press" style={{
+              height:52,border:"none",background:"transparent",display:"flex",alignItems:"center",justifyContent:"center",
+              fontSize:k==="00"?18:20,fontWeight:500,fontFamily:FF,color:k==="back"?tds.grey600:tds.grey900,cursor:"pointer",borderRadius:8,
+            }}>
+              {k==="back"?(<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M5 12L11 6M5 12L11 18" stroke={tds.grey600} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>):k}
+            </button>
+          )})}
+        </div>
+        <div style={{padding:"12px "+sp.lg+"px 0"}}>
+          <button onClick={function(){if(isValid)onNext(numVal)}} className="btn-press" style={{
+            width:"100%",padding:"16px 0",borderRadius:12,border:"none",
+            background:isValid?tds.blue500:tds.grey200,color:isValid?"#fff":tds.grey400,
+            fontSize:typo.t6.s,fontWeight:600,cursor:isValid?"pointer":"default",fontFamily:FF,
+            transition:"background 0.2s ease, color 0.2s ease",
+          }}>다음</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Step 2: Preset Selection */
+function OBStepPreset(props){
+  var budget=props.budget,onComplete=props.onComplete,onBack=props.onBack;
+  var _sel=useState(null),selected=_sel[0],setSelected=_sel[1];
+  var _enter=useState(false),entering=_enter[0],setEntering=_enter[1];
+  var _ct=useState(false),customTapped=_ct[0],setCustomTapped=_ct[1];
+  useEffect(function(){setTimeout(function(){setEntering(true)},80)},[]);
+
+  var presets=[
+    {id:"balanced",label:"균형형",desc:"쇼핑·여가에도 여유 있게",ratios:{"생활":0.40,"구독":0.10,"쇼핑":0.25,"엔터":0.15,"기타":0.10}},
+    {id:"saving",label:"절약형",desc:"생활비 중심, 나머지는 최소로",ratios:{"생활":0.70,"구독":0.05,"쇼핑":0.10,"엔터":0.05,"기타":0.10}},
+    {id:"custom",label:"직접 설정",desc:"카테고리별 예산을 직접 입력해요",ratios:null},
+  ];
+
+  function handleSelect(id){
+    if(id==="custom"){setCustomTapped(true);setTimeout(function(){setCustomTapped(false)},1800);return}
+    setSelected(id);
+  }
+
+  return(
+    <div style={{display:"flex",flexDirection:"column",height:"100%",fontFamily:FF,
+      opacity:entering?1:0,transform:entering?"translateX(0)":"translateX(24px)",transition:"opacity 0.4s ease, transform 0.4s ease"}}>
+      <div style={{flex:1,overflowY:"auto",padding:"0 "+sp.lg+"px"}}>
+        {/* Top safe area — clear status bar (54px) */}
+        <div style={{paddingTop:sp.lg}}>
+          <button onClick={onBack} className="btn-press" style={{
+            width:40,height:40,borderRadius:20,border:"none",background:"transparent",
+            cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+            marginLeft:-10,
+          }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 19l-7-7 7-7" stroke={tds.grey900} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </button>
+        </div>
+        {/* Title area */}
+        <div style={{paddingTop:sp.md}}>
+          <div style={{fontSize:typo.t3.s,lineHeight:typo.t3.h+"px",fontWeight:700,color:tds.grey900,marginBottom:sp.sm}}>어떤 스타일로<br/>관리할까요?</div>
+          <div style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",color:tds.grey500,fontWeight:400,marginBottom:sp.xl}}>월 {obFmt(budget)}원 기준</div>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:sp.sm+sp.xs}}>
+          {presets.map(function(preset,idx){
+            return(
+              <OBPresetCard key={preset.id} preset={preset} selected={selected===preset.id}
+                budget={budget} entering={entering} idx={idx} customTapped={customTapped&&preset.id==="custom"}
+                onClick={function(){handleSelect(preset.id)}}/>
+            );
+          })}
+        </div>
+        <div style={{height:100}}/>
+      </div>
+      <div style={{flexShrink:0,padding:"0 "+sp.lg+"px "+sp.lg+"px",background:tds.bg,position:"relative"}}>
+        <div style={{position:"absolute",top:-24,left:0,right:0,height:24,background:"linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1))",pointerEvents:"none"}}/>
+        <button onClick={function(){if(selected)onComplete(selected)}} className="btn-press" style={{
+          width:"100%",padding:"16px 0",borderRadius:12,border:"none",
+          background:selected?tds.blue500:tds.grey200,color:selected?"#fff":tds.grey400,
+          fontSize:typo.t6.s,fontWeight:600,cursor:selected?"pointer":"default",fontFamily:FF,
+          transition:"background 0.2s ease, color 0.2s ease",
+        }}>시작하기</button>
+      </div>
+    </div>
+  );
+}
+
+/* Step 3: Completion Transition */
+function OBCompletion(props){
+  var budget=props.budget,presetId=props.preset,onFinish=props.onFinish;
+  var _ph=useState(0),phase=_ph[0],setPhase=_ph[1];
+  var labels={balanced:"균형형",saving:"절약형"};
+  useEffect(function(){
+    var t1=setTimeout(function(){setPhase(1)},400);
+    var t2=setTimeout(function(){setPhase(2)},1800);
+    return function(){clearTimeout(t1);clearTimeout(t2)};
+  },[]);
+
+  /* Mini decorative cells */
+  var deco=[
+    {t:"subscription",sz:38,d:0,x:"15%",y:"22%"},{t:"subscription",sz:52,d:0.15,x:"65%",y:"16%"},
+    {t:"tumor",sz:34,d:0.25,x:"75%",y:"55%"},{t:"subscription",sz:28,d:0.1,x:"20%",y:"65%"},
+    {t:"dying",sz:30,d:0.35,x:"55%",y:"72%"},{t:"infected",sz:26,d:0.3,x:"35%",y:"32%"},
+    {t:"subscription",sz:44,d:0.2,x:"45%",y:"50%"},
+  ];
+  var cellCols={subscription:[tds.blue400,tds.blue200],tumor:["#8b5cf6","#c44bd7"],dying:[tds.grey400,tds.grey300],infected:[tds.orange400,tds.orange500]};
+
+  return(
+    <div style={{height:"100%",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden",fontFamily:FF}}>
+      {phase>=1&&deco.map(function(d,i){
+        var cc=cellCols[d.t]||cellCols.subscription;
+        var gid="obmc"+i;
+        return(
+          <div key={i} style={{position:"absolute",left:d.x,top:d.y,width:d.sz,height:d.sz,opacity:0,
+            animationName:"obCellAppear",animationDuration:"0.8s",animationDelay:d.d+"s",animationFillMode:"forwards",animationTimingFunction:"ease-out"}}>
+            <svg width={d.sz} height={d.sz} viewBox="0 0 40 40">
+              <defs><radialGradient id={gid}><stop offset="0%" stopColor={cc[0]} stopOpacity="0.7"/><stop offset="100%" stopColor={cc[1]} stopOpacity="0.3"/></radialGradient></defs>
+              <ellipse cx="20" cy="20" rx="16" ry="14" fill={"url(#"+gid+")"}/>
+              <ellipse cx="20" cy="20" rx="16" ry="14" fill="none" stroke={cc[0]} strokeWidth="0.8" strokeOpacity="0.4"/>
+            </svg>
+          </div>
+        );
+      })}
+      <div style={{textAlign:"center",zIndex:2,opacity:phase>=0?1:0,transform:phase>=0?"scale(1)":"scale(0.9)",transition:"all 0.6s ease"}}>
+        <div style={{width:72,height:72,borderRadius:36,background:tds.blue50,display:"flex",alignItems:"center",justifyContent:"center",
+          margin:"0 auto "+sp.lg+"px",opacity:phase>=1?1:0.5,transition:"opacity 0.4s ease"}}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><circle cx="10.5" cy="10.5" r="6.5" stroke={tds.blue500} strokeWidth="2"/><path d="M15.5 15.5L20 20" stroke={tds.blue500} strokeWidth="2" strokeLinecap="round"/></svg>
+        </div>
+        <div style={{fontSize:typo.t3.s,lineHeight:typo.t3.h+"px",fontWeight:700,color:tds.grey900,marginBottom:sp.sm}}>준비됐어요</div>
+        <div style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",fontWeight:400,color:tds.grey500,marginBottom:sp.xs}}>월 {obFmt(budget)}원 · {labels[presetId]||presetId}</div>
+        <div style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",fontWeight:400,color:tds.grey400}}>소비 생태계를 들여다볼게요</div>
+      </div>
+      <div style={{position:"absolute",bottom:sp.lg,left:sp.lg,right:sp.lg,
+        opacity:phase>=2?1:0,transform:phase>=2?"translateY(0)":"translateY(20px)",transition:"all 0.5s ease"}}>
+        <button onClick={onFinish} className="btn-press" style={{
+          width:"100%",padding:"16px 0",borderRadius:12,border:"none",background:tds.blue500,color:"#fff",
+          fontSize:typo.t6.s,fontWeight:600,cursor:"pointer",fontFamily:FF,
+        }}>내 생태계 보기</button>
+      </div>
+    </div>
+  );
+}
+
+/* Onboarding Flow Controller */
+function OnboardingFlow(props){
+  var onDone=props.onDone;
+  var _step=useState(1),step=_step[0],setStep=_step[1];
+  var _budget=useState(0),budget=_budget[0],setBudget=_budget[1];
+  var _preset=useState(null),preset=_preset[0],setPreset=_preset[1];
+
+  return(
+    <div style={{height:"100%",fontFamily:FF,background:tds.bg,position:"relative",overflow:"hidden"}}>
+      <style>{
+        "@keyframes obBlink{0%,100%{opacity:1}50%{opacity:0}}\n"+
+        "@keyframes obCardUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}\n"+
+        "@keyframes obCheckPop{from{transform:scale(0)}to{transform:scale(1)}}\n"+
+        "@keyframes obLabelFade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}\n"+
+        "@keyframes obCellAppear{0%{opacity:0;transform:scale(0.3)}60%{opacity:0.5;transform:scale(1.08)}100%{opacity:0.3;transform:scale(1)}}\n"
+      }</style>
+      {step===1&&<OBStepBudget onNext={function(amt){setBudget(amt);setStep(2)}}/>}
+      {step===2&&<OBStepPreset budget={budget} onComplete={function(p){setPreset(p);setStep(3)}} onBack={function(){setStep(1)}}/>}
+      {step===3&&<OBCompletion budget={budget} preset={preset} onFinish={function(){onDone(budget,preset)}}/>}
+    </div>
+  );
+}
+
+/* ═══ iPhone 14 Pro Device Frame Wrapper ═══ */
+function CellfApp(){
+  var _ob=useState(true),showOnboarding=_ob[0],setShowOnboarding=_ob[1];
+
+  function handleOnboardingDone(budget,presetId){
+    var presetRatios={
+      balanced:{"생활":0.40,"구독":0.10,"쇼핑":0.25,"엔터":0.15,"기타":0.10},
+      saving:{"생활":0.70,"구독":0.05,"쇼핑":0.10,"엔터":0.05,"기타":0.10},
+    };
+    BUDGETS.total=budget;
+    var r=presetRatios[presetId]||presetRatios.balanced;
+    var cats={};
+    Object.keys(r).forEach(function(k){cats[k]=Math.round(budget*r[k])});
+    BUDGETS.cats=cats;
+    setShowOnboarding(false);
+  }
+
+  return(
+    <div style={{
+      width:"100%",maxWidth:430,margin:"0 auto",
+      minHeight:"100vh",minHeight:"100dvh",
+      background:tds.bg,fontFamily:FF,
+      position:"relative",overflow:"hidden",
+    }}>
+      <style>{
+        
+        ""
+      }</style>
+
+      {/* 앱 컨텐츠 */}
+      <div style={{
+        position:"absolute",inset:0,
+        overflowY:showOnboarding?"hidden":"auto",overflowX:"hidden",
+        WebkitOverflowScrolling:"touch",
+      }}>
+        {showOnboarding
+          ?<OnboardingFlow onDone={handleOnboardingDone}/>
+          :<CellfAppInner/>
+        }
+      </div>
+    </div>
+  );
+}
+
+// Mount
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(CellfApp));
+  </script>
+</body>
+</html>
