@@ -53,8 +53,8 @@ var MONO="'SF Mono',SFMono-Regular,'JetBrains Mono',Menlo,monospace";
 
 /* ═══ Budget System ═══ */
 var BUDGETS={
-  total:1300000,
-  cats:{"생활":650000,"구독":130000,"쇼핑":260000,"엔터":130000,"기타":130000},
+  total:1000000,
+  cats:{"생활":400000,"구독":100000,"쇼핑":250000,"엔터":150000,"기타":100000},
 };
 var PRESETS={
   balanced:{label:"균형형",desc:"쇼핑·여가에도 여유 있게",ratios:{"생활":0.40,"구독":0.10,"쇼핑":0.25,"엔터":0.15,"기타":0.10}},
@@ -86,38 +86,38 @@ var CELLS=[
   /* 종양 세포 (고리 없음, 다크 비주얼) */
   {id:4,name:"게임 현질",type:"tumor",cat:"엔터",amt:143000,last:"오늘",freq:"수시",
     isSubscription:false,
-    diag:"3개월 연속 증가 중. 지난달 대비 180% 성장. 주말 밤에 집중되는 충동 소비 패턴입니다.",
-    diagDetail:"금요일 22~02시 사이에 전체 지출의 73% 집중. 1회 평균 결제 12,400→23,800원 상승 추세. 월급일 전후 3일간 폭발적 증가.",
-    rx:"월 50,000원 한도 설정 시 과소비 증가를 막을 수 있습니다.",
-    rxSteps:["월 한도 50,000원 설정 (현재 대비 -65%)","주말 밤 알림 켜기","2주 관찰 후 재진단"]},
+    diag:"3개월 연속 증가 중.\n주말 밤 충동 소비 패턴이 감지됩니다.",
+    diagDetail:"금요일 22~02시에 전체 지출의 73% 집중.\n1회 결제 평균이 12,400→23,800원으로 상승 중이에요.",
+    rx:"주말 밤 소비가 집중돼요.\n패턴 알림으로 충동 소비를 줄여보세요.",
+    rxSteps:["월 50,000원 한도 설정","주말 밤 알림 켜기","2주 후 재진단"]},
   {id:5,name:"무신사",type:"tumor",cat:"쇼핑",amt:287000,last:"3일 전",freq:"주2-3회",
     isSubscription:false,
-    diag:"급여일 직후 3일간 전체 지출의 68%가 집중됩니다.",
-    diagDetail:"월 평균 6.2회 결제. 장바구니→결제 평균 4분(충동 시그널). 할인 쿠폰 만료 알림 후 24h 이내 결제율 89%.",
-    rx:"급여일 후 72시간 쿨다운 규칙을 적용하세요.",
-    rxSteps:["급여일 후 72시간 쿨다운 설정","장바구니 24시간 보류 규칙","월 150,000원 한도 설정 (-48%)"]},
+    diag:"급여일 직후 3일간 지출의 68%가 집중됩니다.",
+    diagDetail:"월 평균 6.2회 결제.\n장바구니→결제 평균 4분 (충동 패턴).\n할인 쿠폰 만료 후 24시간 내 결제율 89%.",
+    rx:"급여일 직후 충동 소비가 집중돼요.\n쿨다운 알림을 받아보세요.",
+    rxSteps:["급여일 후 72시간 쿨다운","장바구니 24시간 보류 규칙","월 150,000원 한도 설정"]},
 
   /* 사멸대기 (고리 있음, 느린 회전, 채도 저하) */
   {id:6,name:"Netflix",type:"dying",cat:"구독",amt:17000,last:"94일 전",freq:"월간",
     isSubscription:true,usageRate:0,
-    diag:"이 구독은 94일간 사용되지 않았습니다. 정리할 준비가 되었습니다.",
-    diagDetail:"최근 3개월간 접속 기록 없음. 월 결제는 정상 진행 중. 동일 카테고리(OTT) 내 중복 구독 상태.",
-    rx:"월 17,000원을 아낄 수 있습니다. 연간 204,000원 절약.",
-    rxSteps:["정리 시작 → 구독 해지 페이지 연결","월 17,000원 절약","연간 204,000원 절약 예상"]},
+    diag:"94일간 사용하지 않았어요.\n정리할 준비가 됐습니다.",
+    diagDetail:"최근 3개월간 접속 기록이 없어요.\n결제는 매월 정상 진행 중이에요.\n같은 OTT 카테고리에 중복 구독 상태예요.",
+    rx:"정리하면 월 17,000원을 아낄 수 있어요.",
+    rxSteps:["구독 해지 페이지 연결","해지 완료 확인","절약 금액 자동 반영"]},
   {id:7,name:"Adobe CC",type:"dying",cat:"구독",amt:46800,last:"67일 전",freq:"월간",
     isSubscription:true,usageRate:5,
-    diag:"67일간 미사용. 학생 할인 종료 후 월 46,800원으로 갱신 상태.",
-    diagDetail:"Photoshop 마지막 실행: 67일 전. Illustrator: 104일 전. 학생 할인 종료로 23,400→46,800원 자동 인상. 대안: Figma(무료).",
-    rx:"해지하면 연간 561,600원을 아낄 수 있어요.",
-    rxSteps:["정리 시작 → Adobe 구독 관리 연결","연간 561,600원 절약","대안: Figma(무료) 전환 검토"]},
+    diag:"67일간 미사용.\n학생 할인 종료 후 자동 인상된 상태예요.",
+    diagDetail:"Photoshop 67일, Illustrator 104일 미사용.\n학생 할인 종료로 23,400→46,800원 인상.\n대안으로 Figma(무료) 전환을 검토해보세요.",
+    rx:"해지 시 연간 561,600원 절약할 수 있어요.",
+    rxSteps:["Adobe 구독 관리 연결","구독 해지","절약 금액 자동 반영"]},
 
   /* 감염 (고리 깜빡임 — 곧 구독 전환) */
   {id:8,name:"Notion AI",type:"infected",cat:"구독",amt:9900,last:"미사용",freq:"3일 후 전환",
     isSubscription:false,daysUntilCharge:3,
-    diag:"⚠️ 3일 후 유료 전환. 한 번도 사용하지 않았습니다.",
-    diagDetail:"무료체험 가입일: 7일 전. 사용 횟수: 0회. 3일 후 월 9,900원 자동 과금. 연간 118,800원 손실.",
-    rx:"지금 바로 정리하세요.",
-    rxSteps:["지금 정리하기 (3일 내)","방치 시 연간 118,800원 손실","비슷한 패턴 향후 자동 감지"]},
+    diag:"⚠️ 3일 후 유료 전환 예정.\n한 번도 사용하지 않았어요.",
+    diagDetail:"무료체험 가입 7일 전. 사용 0회.\n3일 후 월 9,900원 자동 과금이 시작돼요.",
+    rx:"방치하면 연간 118,800원이 빠져나가요.\n지금 바로 정리하세요.",
+    rxSteps:["무료체험 해지 페이지 연결","자동 결제 차단 완료","과금 방지 확정"]},
 ];
 
 /* ═══ Cell Graphics ═══ */
@@ -267,7 +267,7 @@ function CellSVG(props){
 
 /* ★ 개선 #8+#9: Cell Node — 탭 + 젤리 드래그 인터랙션 */
 function CellNode(props){
-  var cell=props.cell,pos=props.pos,idx=props.idx,onClick=props.onClick,dimmed=props.dimmed,absorbing=props.absorbing;
+  var cell=props.cell,pos=props.pos,idx=props.idx,onClick=props.onClick,dimmed=props.dimmed,absorbing=props.absorbing,cellDragRef=props.cellDragRef;
   var c=TC[cell.type],sz=pos.s,textBoxSize=sz*0.60;
 
   var nodeRef=useRef(null);
@@ -333,6 +333,7 @@ function CellNode(props){
     function onUp(){
       if(!d.dragging&&!d.wasPinch) return;
       d.dragging=false;
+      if(cellDragRef) cellDragRef.current=false;
       var el=nodeRef.current;
       if(el){
         el.style.zIndex="2";
@@ -377,6 +378,7 @@ function CellNode(props){
     d2.wasPinch=false;
     var t=e.touches?e.touches[0]:e;
     d2.dragging=true; d2.moved=false;
+    if(cellDragRef) cellDragRef.current=true;
     d2.startX=t.clientX; d2.startY=t.clientY;
     d2.prevOffX=d2.offX; d2.prevOffY=d2.offY;
     if(d2.animId){cancelAnimationFrame(d2.animId);d2.animId=null;}
@@ -1057,15 +1059,14 @@ function Toast(props){
 function DetailView(props){
   var cell=props.cell,onClose=props.onClose,onApo=props.onApo;
   var c=TC[cell.type];
-  var catBudget=BUDGETS.cats[cell.cat]||0;
-  var budgetRatio=catBudget>0?Math.round(cell.amt/catBudget*100):0;
-  var ratioColor=budgetRatio>100?tds.red500:budgetRatio>80?tds.orange500:tds.grey600;
+  var spendShare=BUDGETS.total>0?Math.round(cell.amt/BUDGETS.total*100):0;
   var isActionable=cell.type==="dying"||cell.type==="infected"||cell.type==="tumor";
   /* #3: 상세 분석 토글 상태 */
   var _detail=useState(false),showDetail=_detail[0],setShowDetail=_detail[1];
+  var _rxOpen=useState(false),showRxSteps=_rxOpen[0],setShowRxSteps=_rxOpen[1];
 
   /* CTA 텍스트 결정 */
-  var ctaLabel=cell.type==="infected"?"즉시 정리하기":cell.type==="dying"?"깔끔 정리 시작":cell.type==="tumor"?"지출 줄이기 — 한도 설정":null;
+  var ctaLabel=cell.type==="infected"?"즉시 정리하기":cell.type==="dying"?"깔끔 정리 시작":cell.type==="tumor"?"소비 패턴 알림 받기":null;
   var ctaBg=tds.blue500;
 
   return(
@@ -1108,9 +1109,13 @@ function DetailView(props){
             </button>
           </div>
 
-          {/* ═══ 상태 — 3컬럼 스탯 ═══ */}
+          {/* ═══ 상태 — 3컬럼 스탯 (전 타입 통일) ═══ */}
           <div style={{borderRadius:12,overflow:"hidden",display:"flex",marginBottom:sp.lg,background:tds.grey50}}>
-            {[{l:"마지막 사용",v:cell.last||"-"},{l:"빈도",v:cell.freq},{l:cell.isSubscription?"사용률":"예산 대비",v:cell.isSubscription?(cell.usageRate||0)+"%":budgetRatio+"%",color:cell.isSubscription?(cell.usageRate>=70?tds.grey800:tds.orange500):ratioColor}].map(function(x,i){return(
+            {[
+              {l:"마지막 사용",v:cell.last||"-"},
+              {l:"빈도",v:cell.freq},
+              {l:"지출 비중",v:cell.type==="infected"?"미과금":spendShare+"%"}
+            ].map(function(x,i){return(
               <div key={i} style={{flex:1,padding:"14px 0",display:"flex",flexDirection:"column",alignItems:"center",gap:sp.xs,borderLeft:i>0?"1px solid "+tds.grey200:"none"}}>
                 <span style={{fontSize:typo.sub11.s,lineHeight:typo.sub11.h+"px",color:tds.grey500,fontWeight:400}}>{x.l}</span>
                 <span style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",fontWeight:600,color:x.color||tds.grey800}}>{x.v}</span>
@@ -1119,31 +1124,33 @@ function DetailView(props){
           </div>
 
           {/* ═══ 진단 섹션 ═══ */}
-          <div style={{marginBottom:sp.lg}}>
+          <div style={{marginBottom:sp.xl}}>
             <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",fontWeight:400,color:tds.grey400,display:"block",marginBottom:sp.sm}}>AI 진단 결과</span>
-            <div style={{padding:sp.md,borderRadius:12,background:tds.grey50}}>
-              <p style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",color:tds.grey700,margin:0}}>{cell.diag}</p>
+            <div style={{padding:sp.md+"px "+sp.lg+"px",borderRadius:12,background:tds.grey50}}>
+              <p style={{fontSize:typo.t6.s,lineHeight:"24px",color:tds.grey700,margin:0,wordBreak:"keep-all",whiteSpace:"pre-line"}}>{cell.diag}</p>
               {!showDetail&&(
                 <button onClick={function(){setShowDetail(true)}} style={{
-                  marginTop:sp.sm+4,padding:0,border:"none",background:"none",cursor:"pointer",
+                  marginTop:sp.md,padding:0,border:"none",background:"none",cursor:"pointer",
                   display:"flex",alignItems:"center",gap:4,
                   WebkitTapHighlightColor:"transparent",
                 }}>
-                  <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",color:tds.blue500,fontWeight:500,fontFamily:FF}}>상세 분석 보기</span>
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke={tds.blue500} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",color:tds.grey500,fontWeight:500,fontFamily:FF}}>상세 분석 보기</span>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke={tds.grey400} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </button>
               )}
               {showDetail&&(
-                <div style={{marginTop:sp.sm+4,paddingTop:sp.sm+4,borderTop:"1px solid "+tds.grey200,
+                <div style={{marginTop:sp.md,paddingTop:sp.md,borderTop:"1px solid "+tds.grey200,
                   animationName:"fadeUp",animationDuration:"0.25s",animationFillMode:"both",
                 }}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:sp.xs}}>
-                    <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",fontWeight:400,color:tds.grey400}}>상세 분석</span>
-                    <button onClick={function(){setShowDetail(false)}} style={{padding:0,border:"none",background:"none",cursor:"pointer",display:"flex",alignItems:"center",WebkitTapHighlightColor:"transparent"}}>
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 7.5l3-3 3 3" stroke={tds.grey400} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    </button>
-                  </div>
-                  <p style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",color:tds.grey500,margin:0}}>{cell.diagDetail}</p>
+                  <button onClick={function(){setShowDetail(false)}} style={{
+                    display:"flex",alignItems:"center",gap:4,marginBottom:sp.md,
+                    padding:0,border:"none",background:"none",cursor:"pointer",
+                    WebkitTapHighlightColor:"transparent",
+                  }}>
+                    <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",fontWeight:500,color:tds.grey400}}>상세 분석</span>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 7.5l3-3 3 3" stroke={tds.grey400} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </button>
+                  <p style={{fontSize:typo.t7.s,lineHeight:"22px",color:tds.grey500,margin:0,wordBreak:"keep-all",whiteSpace:"pre-line"}}>{cell.diagDetail}</p>
                 </div>
               )}
             </div>
@@ -1152,23 +1159,8 @@ function DetailView(props){
           {/* ═══ 처방 섹션 (비정상 세포만) ═══ */}
           {isActionable&&<div>
             <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",fontWeight:400,color:tds.grey400,display:"block",marginBottom:sp.sm}}>처방</span>
-            <div style={{padding:sp.md,borderRadius:12,background:tds.blue50,marginBottom:sp.sm}}>
-              <p style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",color:tds.blue600,margin:0,fontWeight:500}}>{cell.rx}</p>
-            </div>
-            <div style={{padding:sp.md,borderRadius:12,background:tds.grey50}}>
-              {cell.rxSteps.map(function(step,i){return(
-                <div key={i} style={{display:"flex",gap:sp.sm+4}}>
-                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",flexShrink:0}}>
-                    <div style={{width:24,height:24,borderRadius:12,background:tds.blue50,border:"1.5px solid "+tds.blue200,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <span style={{fontSize:typo.sub11.s,fontWeight:600,color:tds.blue500}}>{i+1}</span>
-                    </div>
-                    {i<cell.rxSteps.length-1&&<div style={{width:1.5,height:14,background:tds.blue200,marginTop:2}}/>}
-                  </div>
-                  <div style={{paddingTop:2,paddingBottom:i<cell.rxSteps.length-1?sp.sm:0}}>
-                    <span style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",color:tds.grey700}}>{step}</span>
-                  </div>
-                </div>
-              )})}
+            <div style={{padding:sp.md+"px "+sp.lg+"px",borderRadius:12,background:tds.grey50}}>
+              <p style={{fontSize:typo.t6.s,lineHeight:"24px",color:tds.blue500,margin:0,fontWeight:600,wordBreak:"keep-all",whiteSpace:"pre-line"}}>{cell.rx}</p>
             </div>
           </div>}
 
@@ -1194,10 +1186,22 @@ function DetailView(props){
 }
 
 /* ═══ Main App ═══ */
-function CellfAppInner(){
+function CellfAppInner(props){
+  var navCmd=props.navCmd,onNavDone=props.onNavDone;
   var _sel=useState(null),sel=_sel[0],setSel=_sel[1];
   var _apo=useState(null),apo=_apo[0],setApo=_apo[1];
-  var _cells=useState(CELLS),cells=_cells[0],setCells=_cells[1];
+  /* 세포 금액을 예산 대비 ~80% 수준으로 스케일링 */
+  var _cells=useState(function(){
+    var BASE_TOTAL=1049600; /* CELLS 원본 합계 */
+    var targetTotal=BUDGETS.total*0.80;
+    var scale=targetTotal/BASE_TOTAL;
+    return CELLS.map(function(c){
+      /* 구독/소액은 최소 1000원 단위, 대형 지출은 10000원 단위로 반올림 */
+      var scaled=c.amt*scale;
+      var rounded=scaled>=50000?Math.round(scaled/10000)*10000:Math.round(scaled/1000)*1000;
+      return Object.assign({},c,{amt:Math.max(rounded,1000)});
+    });
+  }),cells=_cells[0],setCells=_cells[1];
   var _intro=useState(true),intro=_intro[0],setIntro=_intro[1];
   var _activeTypes=useState(null),activeTypes=_activeTypes[0],setActiveTypes=_activeTypes[1];
   var _toast=useState(null),toast=_toast[0],setToast=_toast[1];
@@ -1213,8 +1217,23 @@ function CellfAppInner(){
   var panRef=useRef({panning:false,startX:0,startY:0,prevX:0,prevY:0});
   var scopeRef=useRef(null);
   var cellsLayerRef=useRef(null);
+  var gridRef=useRef(null);
+  var cellDragRef=useRef(false); /* 세포 드래그 중 여부 — scope pan 차단용 */
 
   useEffect(function(){var t=setTimeout(function(){setIntro(false)},2800);return function(){clearTimeout(t)}},[]);
+
+  /* 네비게이션 커맨드 핸들러 */
+  useEffect(function(){
+    if(!navCmd) return;
+    setIntro(false);
+    if(navCmd==="home"){setTab("home");setSel(null);setApo(null);setShowOverview(false)}
+    if(navCmd==="overview"){setTab("home");setSel(null);setApo(null);setShowOverview(true)}
+    if(navCmd==="report"){setTab("report");setSel(null);setApo(null);setShowOverview(false)}
+    if(navCmd==="my"){setTab("my");setSel(null);setApo(null);setShowOverview(false)}
+    if(navCmd.indexOf("cell:")===0){var cid=parseInt(navCmd.split(":")[1]);var c=cells.find(function(x){return x.id===cid});if(c){setTab("home");setApo(null);setShowOverview(false);setSel(c)}}
+    if(navCmd.indexOf("apo:")===0){var cid2=parseInt(navCmd.split(":")[1]);var c2=cells.find(function(x){return x.id===cid2});if(c2){setTab("home");setSel(null);setShowOverview(false);setApo(c2)}}
+    onNavDone();
+  },[navCmd]);
 
   var totalAmt=cells.reduce(function(a,c){return a+c.amt},0);
   var budgetPct=BUDGETS.total>0?Math.round(totalAmt/BUDGETS.total*100):0;
@@ -1261,6 +1280,7 @@ function CellfAppInner(){
     if(e.target!==e.currentTarget&&e.target.tagName!=="DIV") return;
     if(zoom<=1) return;
     if(pinchRef.current.pinching) return;
+    if(cellDragRef.current) return; /* 세포 드래그 중이면 pan 차단 */
     var t=e.touches?e.touches[0]:e;
     if(e.touches&&e.touches.length===2) return;
     var pr=panRef.current;
@@ -1273,7 +1293,7 @@ function CellfAppInner(){
     var pr=panRef.current;
     var pRef=pinchRef.current;
     function onPanMove(e){
-      if(!pr.panning||pRef.pinching) return;
+      if(!pr.panning||pRef.pinching||cellDragRef.current) return;
       var t=e.touches?e.touches[0]:e;
       if(e.touches&&e.touches.length===2){pr.panning=false;return;}
       var dx=(t.clientX-pr.startX)/zoom;
@@ -1287,7 +1307,7 @@ function CellfAppInner(){
     /* ── 핀치 줌: DOM 직접 조작 (리렌더 없음) ── */
     function applyZoomDOM(z,p){
       var layer=cellsLayerRef.current;
-      var grid=el.querySelector("[data-grid]");
+      var grid=gridRef.current;
       if(layer) layer.style.transform="scale("+z+") translate("+p.x+"%,"+p.y+"%)";
       if(grid) grid.style.backgroundSize=(50*z)+"px "+(50*z)+"px";
     }
@@ -1303,6 +1323,7 @@ function CellfAppInner(){
         pRef.lastPan={x:pan.x,y:pan.y};
       }
     }
+    var pinchRaf=null;
     function handleTouchMove(e){
       if(e.touches.length===2&&pRef.pinching){
         e.preventDefault();
@@ -1314,8 +1335,13 @@ function CellfAppInner(){
         var np=nz<=1?{x:0,y:0}:clampPan(pRef.lastPan.x,pRef.lastPan.y,nz);
         pRef.lastZoom=nz;
         pRef.lastPan=np;
-        /* DOM 직접 조작 — React 리렌더 없이 60fps */
-        applyZoomDOM(nz,np);
+        /* rAF 스로틀 — 프레임당 1회만 DOM 갱신 */
+        if(!pinchRaf){
+          pinchRaf=requestAnimationFrame(function(){
+            applyZoomDOM(pRef.lastZoom,pRef.lastPan);
+            pinchRaf=null;
+          });
+        }
       }
     }
     function handleTouchEnd(e){
@@ -1464,7 +1490,7 @@ function CellfAppInner(){
           <rect width="100%" height="100%" filter="url(#cultureMediumNoise)"/>
         </svg>
         {/* 그리드 */}
-        <div data-grid="1" style={{position:"absolute",inset:0,backgroundImage:"linear-gradient("+sb.gridTint+" 1px, transparent 1px), linear-gradient(90deg, "+sb.gridTint+" 1px, transparent 1px)",backgroundSize:(50*zoom)+"px "+(50*zoom)+"px",pointerEvents:"none",zIndex:1}}/>
+        <div ref={gridRef} style={{position:"absolute",inset:0,backgroundImage:"linear-gradient("+sb.gridTint+" 1px, transparent 1px), linear-gradient(90deg, "+sb.gridTint+" 1px, transparent 1px)",backgroundSize:(50*zoom)+"px "+(50*zoom)+"px",pointerEvents:"none",zIndex:1,willChange:"background-size",transform:"translateZ(0)"}}/>
         {/* 비네팅 */}
         <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,"+(sb.vignetteOpacity+0.03)+") 100%)",pointerEvents:"none",zIndex:12}}/>
         {/* 코스틱 */}
@@ -1490,10 +1516,10 @@ function CellfAppInner(){
               padding:"4px 8px",borderRadius:8,
               fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",fontWeight:500,
               background:"rgba(255,255,255,0.75)",backdropFilter:"blur(8px)",
-              color:budgetPct>90?tds.red500:budgetPct>70?tds.orange500:tds.grey600,
+              color:tds.grey600,
               cursor:"pointer",
               WebkitTapHighlightColor:"transparent",
-            }}>예산 {budgetPct}%</span>
+            }}>소비내역</span>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:sp.sm,pointerEvents:"auto"}}>
             {/* 벨 — 감염 세포 있으면 red dot 표시 */}
@@ -1576,21 +1602,21 @@ function CellfAppInner(){
         )}
         {filterOpen&&(
           <div style={{
-            position:"absolute",bottom:14,left:sp.lg,zIndex:15,
-            height:38,borderRadius:19,
-            background:"rgba(255,255,255,0.82)",
+            position:"absolute",bottom:14,left:sp.lg,right:sp.lg,zIndex:15,
+            height:40,borderRadius:20,
+            background:"rgba(255,255,255,0.85)",
             backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
             boxShadow:"0 1px 8px rgba(0,0,0,0.06)",
-            display:"inline-flex",alignItems:"center",gap:0,
-            padding:"0 8px 0 0",
+            display:"flex",alignItems:"center",
+            padding:"0 4px",
             animationName:"fadeUp",animationDuration:"0.15s",animationFillMode:"both",
           }}>
-            {/* 좌측 아이콘 — 필터 비활성: 닫기(필터), 필터 활성: 초기화(X) */}
+            {/* 좌측 아이콘 */}
             <button onClick={function(){if(activeTypes!==null){setActiveTypes(null)}else{setFilterOpen(false)}}} style={{
-              width:34,height:34,borderRadius:17,border:"none",
+              width:32,height:32,borderRadius:16,border:"none",
               background:activeTypes!==null?"rgba(0,0,0,0.06)":"transparent",
               display:"flex",alignItems:"center",justifyContent:"center",
-              cursor:"pointer",padding:0,flexShrink:0,marginLeft:2,
+              cursor:"pointer",padding:0,flexShrink:0,
               WebkitTapHighlightColor:"transparent",
             }}>
               {activeTypes!==null?(
@@ -1599,8 +1625,8 @@ function CellfAppInner(){
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1.5 3h13M4 8h8M6 13h4" stroke={tds.grey500} strokeWidth="1.4" strokeLinecap="round"/></svg>
               )}
             </button>
-            {/* 칩들 */}
-            <div style={{display:"flex",gap:2,alignItems:"center",minWidth:0}}>
+            {/* 칩들 — 균등 배분 */}
+            <div style={{display:"flex",flex:1,justifyContent:"space-evenly",alignItems:"center",minWidth:0}}>
               {legendTypes.map(function(type){return(
                 <LegendItem key={type} type={type} active={isTypeActive(type)} filtering={activeTypes!==null} onTap={function(){toggleType(type)}}/>
               )})}
@@ -1614,90 +1640,23 @@ function CellfAppInner(){
           transform:"scale("+zoom+") translate("+pan.x+"%,"+pan.y+"%)",
           transformOrigin:"50% 50%",
           willChange:"transform",
+          backfaceVisibility:"hidden",WebkitBackfaceVisibility:"hidden",
         }}>
         {cells.map(function(c){
           var dimmed=activeTypes!==null&&!activeTypes[c.type];
           var pos=posMap[c.id];
           if(!pos) return null;
           var isAbsorbing=false;
-          return <CellNode key={c.id} cell={c} pos={pos} idx={c.id} onClick={setSel} dimmed={dimmed} absorbing={isAbsorbing}/>;
+          return <CellNode key={c.id} cell={c} pos={pos} idx={c.id} onClick={setSel} dimmed={dimmed} absorbing={isAbsorbing} cellDragRef={cellDragRef}/>;
         })}
         </div>
       </div>
 
       {/* ═══════════════════════════════════════
           BLOCK 2: 스크롤 컨텐츠 영역
-          — 현미경 아래, 여유로운 패딩
+          — 예산 현황 + 세포 진단 요약
       ═══════════════════════════════════════ */}
-      <div style={{padding:sp.md+"px "+sp.lg+"px 108px",position:"relative",display:tab==="home"?"block":"none"}}>
-
-        {/* ── 이번 달 요약 — TDS ListHeader 패턴 ── */}
-        <div style={{
-          animationName:"fadeUp",animationDuration:"0.5s",animationFillMode:"both",
-          animationDelay:"0.4s",
-        }}>
-          <div style={{marginBottom:sp.sm}}>
-            {/* upper: 보조설명 */}
-            <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",fontWeight:400,color:tds.grey500,display:"block",marginBottom:2}}>3월 기준</span>
-            {/* title + right row */}
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <span style={{fontSize:typo.t5.s,lineHeight:typo.t5.h+"px",fontWeight:700,color:tds.grey900}}>이번 달 요약</span>
-            </div>
-          </div>
-
-          {sums.map(function(s,i){
-            var tc=TC[s.t];
-            var total=cells.filter(function(c){return c.type===s.t}).reduce(function(a,c){return a+c.amt},0);
-            var count=cells.filter(function(c){return c.type===s.t}).length;
-            if(count===0) return null;
-            var amtStr=String(total).replace(/\B(?=(\d{3})+(?!\d))/g,",");
-            return(
-              <div key={s.t}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 0"}}>
-                  {/* 좌측: 도트 + 라벨 + 트렌드 */}
-                  <div style={{display:"flex",alignItems:"center",gap:sp.sm,minWidth:0}}>
-                    <div style={{width:8,height:8,borderRadius:4,background:tc.lc||tds.grey400,flexShrink:0}}/>
-                    <span style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",color:tds.grey600,fontWeight:400}}>{s.l}</span>
-                    {s.trend&&<span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",color:s.trendColor,fontWeight:500,marginLeft:2}}>{s.trend}</span>}
-                  </div>
-                  {/* 우측: 금액 — 숫자 t5/600, 원 t7/400 */}
-                  <span style={{flexShrink:0}}>
-                    <span style={{fontSize:typo.t5.s,lineHeight:typo.t5.h+"px",fontWeight:600,color:tds.grey900}}>{amtStr}</span>
-                    <span style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",fontWeight:400,color:tds.grey400,marginLeft:1}}>원</span>
-                  </span>
-                </div>
-                {i<sums.length-1&&<div style={{height:1,background:tds.grey100,marginLeft:20}}/>}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* ── 인사이트 카드 (동적 계산) ── */}
-        {(function(){
-          var cleanable=cells.filter(function(c){return c.type==="dying"||c.type==="infected"});
-          if(cleanable.length===0) return null;
-          var totalSave=cleanable.reduce(function(a,c){return a+c.amt},0);
-          return(
-            <div style={{
-              marginTop:sp.md,padding:sp.md+"px "+sp.lg+"px",borderRadius:16,
-              background:tds.blue50,
-              animationName:"fadeUp",animationDuration:"0.5s",animationFillMode:"both",
-              animationDelay:"0.6s",
-            }}>
-              <p style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",color:tds.blue600,margin:0,fontWeight:500}}>
-                정리 가능한 {cleanable.length}개를 처리하면 월 <span style={{fontWeight:600}}>{fmt(totalSave)}</span> 절약
-              </p>
-            </div>
-          );
-        })()}
-
-      </div>
-
-      {tab==="home"&&sel&&<DetailView cell={sel} onClose={function(){setSel(null)}} onApo={doApo}/>}
-      {tab==="home"&&apo&&<ApoptosisView cell={apo} onDone={doneApo} onClose={function(){setSel(apo);setApo(null)}}/>}
-
-      {/* ═══ 생태계 오버뷰 바텀시트 ═══ */}
-      {showOverview&&(function(){
+      {(function(){
         var tumorCells=cells.filter(function(c){return c.type==="tumor"});
         var dyingCells=cells.filter(function(c){return c.type==="dying"});
         var infectedCells=cells.filter(function(c){return c.type==="infected"});
@@ -1706,137 +1665,99 @@ function CellfAppInner(){
         var dyingAmt=dyingCells.reduce(function(a,c){return a+c.amt},0);
         var infectedAmt=infectedCells.reduce(function(a,c){return a+c.amt},0);
         var saveable=dyingAmt+infectedAmt;
-        /* 상태 판정 */
         var grade=budgetPct>90?"danger":budgetPct>70?"caution":"good";
         var gradeColor=grade==="danger"?tds.red500:grade==="caution"?tds.orange500:tds.blue500;
         var gradeTitle=grade==="danger"?"지출이 많은 달이에요":grade==="caution"?"조금 신경 쓰면 좋겠어요":"전반적으로 괜찮아요";
-        var gradeDesc=grade==="danger"?"예산의 90%를 넘겼어요. 남은 기간 동안 지출을 줄여보는 건 어떨까요?"
-          :grade==="caution"?"예산의 70%를 넘겼어요. 아직 여유가 있지만 속도 조절이 필요해요."
-          :"예산 범위 안에서 잘 쓰고 있어요. 이 페이스 유지하면 돼요.";
-
-        /* 인사이트 항목 생성 */
+        var gradeDesc=grade==="danger"?"예산의 90%를 넘겼어요.\n남은 기간 지출을 줄여보면 좋겠어요."
+          :grade==="caution"?"예산의 70%를 사용했어요.\n남은 예산 안에서 잘 마무리해봐요."
+          :"예산 범위 안에서 잘 쓰고 있어요.\n이 페이스 유지하면 돼요.";
         var insights=[];
-        if(tumorCells.length>0) insights.push({
-          icon:"📈",color:"#c44bd7",bg:"#f3e8ff",
-          title:tumorCells.map(function(c){return c.name}).join(", ")+"에서 과소비가 감지됐어요",
-          desc:"총 "+fmt(tumorAmt)+"으로 예산을 초과하고 있어요.",
-        });
-        if(dyingCells.length>0) insights.push({
-          icon:"💤",color:tds.grey600,bg:tds.grey100,
-          title:dyingCells.length+"개 구독을 안 쓰고 있어요",
-          desc:"정리하면 월 "+fmt(dyingAmt)+"을 아낄 수 있어요.",
-        });
-        if(infectedCells.length>0) insights.push({
-          icon:"⏰",color:tds.orange500,bg:tds.orange50,
-          title:"곧 유료로 바뀌는 구독이 있어요",
-          desc:infectedCells[0].name+" — "+infectedCells[0].freq+". 지금 확인해보세요.",
-        });
-        if(healthyCells.length>0) insights.push({
-          icon:"✓",color:tds.blue500,bg:tds.blue50,
-          title:healthyCells.length+"개 지출은 정상 범위예요",
-          desc:"큰 변동 없이 안정적으로 유지되고 있어요.",
-        });
+        if(tumorCells.length>0) insights.push({icon:<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 14l4-4 3 3 5-6" stroke="#c44bd7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 7h4v4" stroke="#c44bd7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,bg:"#f3e8ff",title:tumorCells.map(function(c){return c.name}).join(", ")+"에서 과소비가 감지됐어요",desc:"총 "+fmt(tumorAmt)+"으로 예산을 초과하고 있어요."});
+        if(dyingCells.length>0) insights.push({icon:<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke={tds.grey500} strokeWidth="1.8"/><path d="M7.5 12.5s1-1 2.5-1 2.5 1 2.5 1" stroke={tds.grey500} strokeWidth="1.8" strokeLinecap="round"/><path d="M7 8.5h.01M13 8.5h.01" stroke={tds.grey500} strokeWidth="2" strokeLinecap="round"/></svg>,bg:tds.grey100,title:dyingCells.length+"개 구독을 안 쓰고 있어요",desc:"정리하면 월 "+fmt(dyingAmt)+"을 아낄 수 있어요."});
+        if(infectedCells.length>0) insights.push({icon:<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke={tds.orange500} strokeWidth="1.8"/><path d="M10 6v5l3 2" stroke={tds.orange500} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>,bg:tds.orange50,title:"곧 유료로 바뀌는 구독이 있어요",desc:infectedCells[0].name+" — "+infectedCells[0].freq+". 지금 확인해보세요."});
+        if(healthyCells.length>0) insights.push({icon:<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke={tds.blue500} strokeWidth="1.8"/><path d="M7 10l2 2 4-4" stroke={tds.blue500} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,bg:tds.blue50,title:healthyCells.length+"개 지출은 정상 범위예요",desc:"큰 변동 없이 안정적으로 유지되고 있어요."});
+        return(
+        <div style={{padding:sp.md+"px "+sp.lg+"px 108px",position:"relative",display:tab==="home"?"block":"none"}}>
+          <div style={{animationName:"fadeUp",animationDuration:"0.5s",animationFillMode:"both",animationDelay:"0.4s"}}>
+            <span style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",fontWeight:400,color:tds.grey500,display:"block",marginBottom:sp.xs}}>3월 소비 예산</span>
+            <span style={{fontSize:26,lineHeight:"34px",fontWeight:700,color:tds.grey900,display:"block"}}>{budgetPct}%<span style={{fontSize:typo.t6.s,fontWeight:500,color:tds.grey400,marginLeft:6}}>사용</span></span>
+            <div style={{marginTop:sp.md,marginBottom:sp.sm}}>
+              <div style={{height:8,borderRadius:4,background:tds.grey100,overflow:"hidden"}}>
+                <div style={{height:"100%",borderRadius:4,width:Math.min(budgetPct,100)+"%",background:gradeColor,transition:"width 0.5s ease-out"}}/>
+              </div>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:sp.md}}>
+              <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",color:tds.grey500,fontWeight:400}}>{fmt(totalAmt)}</span>
+              <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",color:tds.grey400,fontWeight:400}}>{fmt(BUDGETS.total)}</span>
+            </div>
+          </div>
+          <div style={{animationName:"fadeUp",animationDuration:"0.5s",animationFillMode:"both",animationDelay:"0.6s",marginTop:sp.xl}}>
+            <div style={{marginBottom:sp.md}}>
+              <span style={{fontSize:typo.t5.s,lineHeight:typo.t5.h+"px",fontWeight:700,color:tds.grey900}}>세포 진단 요약</span>
+            </div>
+            {insights.map(function(ins,i){return(
+              <div key={i} style={{display:"flex",gap:sp.md-2,padding:sp.md+"px 0",borderTop:i===0?"none":"1px solid "+tds.grey100}}>
+                <div style={{width:36,height:36,borderRadius:10,background:ins.bg,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>{ins.icon}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <span style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",fontWeight:600,color:tds.grey900,display:"block",wordBreak:"keep-all"}}>{ins.title}</span>
+                  <span style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",fontWeight:400,color:tds.grey500,display:"block",marginTop:2,wordBreak:"keep-all"}}>{ins.desc}</span>
+                </div>
+              </div>
+            )})}
+            {saveable>0&&(
+              <div style={{marginTop:sp.md,padding:sp.md+"px "+sp.lg+"px",borderRadius:12,background:tds.blue50,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <span style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",fontWeight:400,color:tds.blue600,wordBreak:"keep-all"}}>정리하면 아낄 수 있는 금액</span>
+                <span style={{fontSize:typo.t5.s,lineHeight:typo.t5.h+"px",fontWeight:700,color:tds.blue500}}>월 {fmt(saveable)}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        );
+      })()}
 
+      {tab==="home"&&sel&&<DetailView cell={sel} onClose={function(){setSel(null)}} onApo={doApo}/>}
+      {tab==="home"&&apo&&<ApoptosisView cell={apo} onDone={doneApo} onClose={function(){setSel(apo);setApo(null)}}/>}
+
+      {/* ═══ 소비내역 바텀시트 ═══ */}
+      {showOverview&&(function(){
+        var cleanable=cells.filter(function(c){return c.type==="dying"||c.type==="infected"});
+        var totalSave=cleanable.reduce(function(a,c){return a+c.amt},0);
         return(
           <div style={{position:"fixed",inset:0,zIndex:900}}>
-            {/* dim */}
-            <div onClick={function(){setShowOverview(false)}} style={{
-              position:"absolute",inset:0,background:"rgba(25,31,40,0.45)",
-              animationName:"fadeIn",animationDuration:"0.2s",animationFillMode:"both",
-            }}/>
-            {/* 시트 */}
-            <div style={{
-              position:"absolute",bottom:0,left:0,right:0,
-              background:tds.bg,borderRadius:"20px 20px 0 0",
-              maxHeight:680,
-              animationName:"sheetUp",animationDuration:"0.35s",animationTimingFunction:"cubic-bezier(0.32,0.72,0,1)",animationFillMode:"both",
-              display:"flex",flexDirection:"column",
-            }}>
-              {/* 핸들 */}
-              <div style={{display:"flex",justifyContent:"center",padding:"10px 0 4px"}}>
-                <div style={{width:36,height:4,borderRadius:2,background:tds.grey200}}/>
-              </div>
-
-              {/* 스크롤 영역 */}
-              <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"4px "+sp.lg+"px "+sp.xl+"px"}}>
-
-                {/* 상태 헤더 — TDS AmountTop 패턴 */}
-                <div style={{marginBottom:sp.lg}}>
-                  {/* 상단 라벨 */}
-                  <span style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",fontWeight:400,color:tds.grey500,display:"block",marginBottom:sp.xs}}>3월 소비 예산</span>
-                  {/* 히어로 — TDS t3 스케일, 숫자+% 인라인 */}
-                  <span style={{fontSize:26,lineHeight:"34px",fontWeight:700,color:tds.grey900,display:"block"}}>{budgetPct}%<span style={{fontSize:typo.t6.s,fontWeight:500,color:tds.grey400,marginLeft:6}}>사용</span></span>
-
-                  {/* TDS ProgressBar normal — height 8, borderRadius 4 */}
-                  <div style={{marginTop:sp.md,marginBottom:sp.sm}}>
-                    <div style={{height:8,borderRadius:4,background:tds.grey100,overflow:"hidden"}}>
-                      <div style={{height:"100%",borderRadius:4,width:Math.min(budgetPct,100)+"%",background:gradeColor,transition:"width 0.5s ease-out"}}/>
-                    </div>
-                  </div>
-                  <div style={{display:"flex",justifyContent:"space-between"}}>
-                    <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",color:tds.grey500,fontWeight:400}}>{fmt(totalAmt)}</span>
-                    <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",color:tds.grey400,fontWeight:400}}>{fmt(BUDGETS.total)}</span>
-                  </div>
-
-                  {/* 상태 메시지 카드 */}
-                  <div style={{
-                    marginTop:sp.md,padding:"14px "+sp.md+"px",borderRadius:12,
-                    background:tds.grey50,
-                  }}>
-                    <span style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",fontWeight:600,color:tds.grey800,display:"block",marginBottom:2}}>{gradeTitle}</span>
-                    <span style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",fontWeight:400,color:tds.grey500}}>{gradeDesc}</span>
-                  </div>
-                </div>
-
-                {/* 구분선 */}
-                <div style={{height:1,background:tds.grey100,marginBottom:sp.md}}/>
-
-                {/* 인사이트 리스트 */}
-                <div style={{marginBottom:sp.xs}}>
+            <div onClick={function(){setShowOverview(false)}} style={{position:"absolute",inset:0,background:"rgba(25,31,40,0.45)",animationName:"fadeIn",animationDuration:"0.2s",animationFillMode:"both"}}/>
+            <div style={{position:"absolute",bottom:0,left:0,right:0,background:tds.bg,borderRadius:"20px 20px 0 0",animationName:"sheetUp",animationDuration:"0.35s",animationTimingFunction:"cubic-bezier(0.32,0.72,0,1)",animationFillMode:"both",display:"flex",flexDirection:"column"}}>
+              <div style={{display:"flex",justifyContent:"center",padding:"10px 0 4px"}}><div style={{width:36,height:4,borderRadius:2,background:tds.grey200}}/></div>
+              <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"4px "+sp.lg+"px "+sp.md+"px"}}>
+                <div style={{marginBottom:sp.sm}}>
                   <span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",fontWeight:400,color:tds.grey500,display:"block",marginBottom:2}}>3월 기준</span>
-                  <span style={{fontSize:typo.t5.s,lineHeight:typo.t5.h+"px",fontWeight:700,color:tds.grey900,display:"block",marginBottom:sp.sm}}>세포 진단 요약</span>
+                  <span style={{fontSize:typo.t5.s,lineHeight:typo.t5.h+"px",fontWeight:700,color:tds.grey900}}>소비내역</span>
                 </div>
-
-                {insights.map(function(ins,i){return(
-                  <div key={i} style={{
-                    display:"flex",gap:sp.md-2,
-                    padding:sp.md+"px 0",
-                    borderTop:i===0?"none":"1px solid "+tds.grey100,
-                  }}>
-                    <div style={{
-                      width:36,height:36,borderRadius:10,background:ins.bg,flexShrink:0,
-                      display:"flex",alignItems:"center",justifyContent:"center",
-                      fontSize:16,
-                    }}>{ins.icon}</div>
-                    <div style={{flex:1,minWidth:0}}>
-                      <span style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",fontWeight:600,color:tds.grey900,display:"block"}}>{ins.title}</span>
-                      <span style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",fontWeight:400,color:tds.grey500,display:"block",marginTop:2}}>{ins.desc}</span>
+                {sums.map(function(s,i){
+                  var tc=TC[s.t];
+                  var total=cells.filter(function(c){return c.type===s.t}).reduce(function(a,c){return a+c.amt},0);
+                  var count=cells.filter(function(c){return c.type===s.t}).length;
+                  if(count===0) return null;
+                  var amtStr=String(total).replace(/\B(?=(\d{3})+(?!\d))/g,",");
+                  return(
+                    <div key={s.t}>
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 0"}}>
+                        <div style={{display:"flex",alignItems:"center",gap:sp.sm,minWidth:0}}>
+                          <div style={{width:8,height:8,borderRadius:4,background:tc.lc||tds.grey400,flexShrink:0}}/>
+                          <span style={{fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",color:tds.grey600,fontWeight:400}}>{s.l}</span>
+                          {s.trend&&<span style={{fontSize:typo.sub12.s,lineHeight:typo.sub12.h+"px",color:s.trendColor,fontWeight:500,marginLeft:2}}>{s.trend}</span>}
+                        </div>
+                        <span style={{flexShrink:0}}>
+                          <span style={{fontSize:typo.t5.s,lineHeight:typo.t5.h+"px",fontWeight:600,color:tds.grey900}}>{amtStr}</span>
+                          <span style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",fontWeight:400,color:tds.grey400,marginLeft:1}}>원</span>
+                        </span>
+                      </div>
+                      {i<sums.length-1&&<div style={{height:1,background:tds.grey100,marginLeft:20}}/>}
                     </div>
-                  </div>
-                )})}
-
-                {/* 절약 가능 금액 */}
-                {saveable>0&&(
-                  <div style={{
-                    marginTop:sp.md,padding:sp.md,borderRadius:12,
-                    background:tds.blue50,
-                    display:"flex",alignItems:"center",justifyContent:"space-between",
-                  }}>
-                    <span style={{fontSize:typo.t7.s,lineHeight:typo.t7.h+"px",fontWeight:400,color:tds.blue600}}>지금 정리하면 아낄 수 있는 금액</span>
-                    <span style={{fontSize:typo.t5.s,lineHeight:typo.t5.h+"px",fontWeight:700,color:tds.blue500}}>월 {fmt(saveable)}</span>
-                  </div>
-                )}
+                  );
+                })}
               </div>
-
-              {/* 닫기 버튼 */}
               <div style={{flexShrink:0,padding:sp.md+"px "+sp.lg+"px "+(sp.lg+8)+"px"}}>
-                <button onClick={function(){setShowOverview(false)}} style={{
-                  width:"100%",padding:"16px 0",borderRadius:12,border:"none",
-                  background:tds.blue500,color:"#fff",
-                  fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",fontWeight:600,
-                  cursor:"pointer",fontFamily:FF,
-                  WebkitTapHighlightColor:"transparent",
-                }}>확인했어요</button>
+                <button onClick={function(){setShowOverview(false)}} style={{width:"100%",padding:"16px 0",borderRadius:12,border:"none",background:tds.blue500,color:"#fff",fontSize:typo.t6.s,lineHeight:typo.t6.h+"px",fontWeight:600,cursor:"pointer",fontFamily:FF,WebkitTapHighlightColor:"transparent"}}>확인했어요</button>
               </div>
             </div>
           </div>
@@ -2059,7 +1980,8 @@ function OBStepBudget(props){
 
   var numVal=Number(amount||"0");
   var fmtNum=String(numVal).replace(/\B(?=(\d{3})+(?!\d))/g,",");
-  var displayAmt=numVal>0?fmtNum+"원":"0원";
+  var displayNum=numVal>0?fmtNum:"0";
+  var displayUnit="원";
   var isValid=numVal>=100000;
   var keys=[1,2,3,4,5,6,7,8,9,"00",0,"back"];
 
@@ -2075,8 +1997,9 @@ function OBStepBudget(props){
         </div>
         {/* Amount display */}
         <div style={{fontSize:28,lineHeight:"38px",fontWeight:700,color:numVal>0?tds.grey900:tds.grey300,marginBottom:sp.lg,transition:"color 0.2s ease"}}>
-          {displayAmt}
-          <span style={{display:"inline-block",width:2,height:28,background:tds.blue500,marginLeft:2,verticalAlign:"middle",animationName:"obBlink",animationDuration:"1s",animationIterationCount:"infinite",animationTimingFunction:"step-end"}}/>
+          {displayNum}
+          <span style={{display:"inline-block",width:2,height:28,background:tds.blue500,marginLeft:2,marginRight:1,verticalAlign:"middle",animationName:"obBlink",animationDuration:"1s",animationIterationCount:"infinite",animationTimingFunction:"step-end"}}/>
+          <span style={{fontWeight:400,color:tds.grey400,fontSize:22}}>{displayUnit}</span>
         </div>
         <div style={{display:"flex",gap:sp.sm}}>
           {[300000,500000,1000000].map(function(v){return(
@@ -2234,10 +2157,14 @@ function OBCompletion(props){
 
 /* Onboarding Flow Controller */
 function OnboardingFlow(props){
-  var onDone=props.onDone;
-  var _step=useState(1),step=_step[0],setStep=_step[1];
-  var _budget=useState(0),budget=_budget[0],setBudget=_budget[1];
-  var _preset=useState(null),preset=_preset[0],setPreset=_preset[1];
+  var onDone=props.onDone,initialStep=props.initialStep||1,onStepChange=props.onStepChange;
+  var _step=useState(initialStep),step=_step[0],setStep=_step[1];
+  var _budget=useState(initialStep>1?1000000:0),budget=_budget[0],setBudget=_budget[1];
+  var _preset=useState(initialStep>2?"balanced":null),preset=_preset[0],setPreset=_preset[1];
+
+  useEffect(function(){setStep(initialStep);if(initialStep>1)setBudget(1000000);if(initialStep>2)setPreset("balanced")},[initialStep]);
+
+  function goStep(n){setStep(n);if(onStepChange)onStepChange(n)}
 
   return(
     <div style={{height:"100%",fontFamily:FF,background:tds.bg,position:"relative",overflow:"hidden"}}>
@@ -2248,8 +2175,8 @@ function OnboardingFlow(props){
         "@keyframes obLabelFade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}\n"+
         "@keyframes obCellAppear{0%{opacity:0;transform:scale(0.3)}60%{opacity:0.5;transform:scale(1.08)}100%{opacity:0.3;transform:scale(1)}}\n"
       }</style>
-      {step===1&&<OBStepBudget onNext={function(amt){setBudget(amt);setStep(2)}}/>}
-      {step===2&&<OBStepPreset budget={budget} onComplete={function(p){setPreset(p);setStep(3)}} onBack={function(){setStep(1)}}/>}
+      {step===1&&<OBStepBudget onNext={function(amt){setBudget(amt);goStep(2)}}/>}
+      {step===2&&<OBStepPreset budget={budget} onComplete={function(p){setPreset(p);goStep(3)}} onBack={function(){goStep(1)}}/>}
       {step===3&&<OBCompletion budget={budget} preset={preset} onFinish={function(){onDone(budget,preset)}}/>}
     </div>
   );
@@ -2260,6 +2187,9 @@ function CellfApp(){
   var _ob=useState(true),showOnboarding=_ob[0],setShowOnboarding=_ob[1];
   var _vh=useState(window.innerHeight),vh=_vh[0],setVh=_vh[1];
   var _vw=useState(window.innerWidth),vw=_vw[0],setVw=_vw[1];
+  var _navCmd=useState(null),navCmd=_navCmd[0],setNavCmd=_navCmd[1];
+  var _activeChip=useState("ob1"),activeChip=_activeChip[0],setActiveChip=_activeChip[1];
+  var _obStep=useState(1),obStep=_obStep[0],setObStep=_obStep[1];
 
   useEffect(function(){
     function onResize(){
@@ -2282,15 +2212,17 @@ function CellfApp(){
     Object.keys(r).forEach(function(k){cats[k]=Math.round(budget*r[k])});
     BUDGETS.cats=cats;
     setShowOnboarding(false);
+    setActiveChip("home");
   }
 
   /* 네이티브 앱 크기 (설계 기준) */
   var NATIVE_W=390,NATIVE_H=844;
   var FRAME_PAD=6;
   var MARGIN=8;
+  var NAV_H=32;
 
   /* 프레임 크기: 뷰포트에서 여유를 뺀 영역에 iPhone 비율로 맞춤 */
-  var availH=vh-MARGIN*2;
+  var availH=vh-MARGIN*2-NAV_H;
   var availW=vw-MARGIN*2;
 
   var frameH=availH;
@@ -2308,17 +2240,80 @@ function CellfApp(){
   var scale=Math.min(screenW/NATIVE_W,screenH/NATIVE_H);
   var borderR=Math.round(47*scale);
 
+  /* 네비게이션 칩 정의 */
+  var NAV_CHIPS=[
+    {group:"온보딩",items:[
+      {id:"ob1",label:"예산 입력"},
+      {id:"ob2",label:"프리셋"},
+      {id:"ob3",label:"완료"},
+    ]},
+    {group:"홈",items:[
+      {id:"home",label:"현미경"},
+      {id:"overview",label:"소비내역"},
+    ]},
+    {group:"상세",items:[
+      {id:"cell:1",label:"지출"},
+      {id:"cell:4",label:"과소비"},
+      {id:"cell:6",label:"미사용"},
+      {id:"cell:8",label:"유료전환"},
+    ]},
+    {group:"정리",items:[
+      {id:"apo:6",label:"Apoptosis"},
+    ]},
+  ];
+
+  function handleChip(chip){
+    setActiveChip(chip.id);
+    if(chip.id==="ob1"){setObStep(1);setShowOnboarding(true)}
+    else if(chip.id==="ob2"){setObStep(2);setShowOnboarding(true)}
+    else if(chip.id==="ob3"){setObStep(3);setShowOnboarding(true)}
+    else {
+      if(showOnboarding){handleOnboardingDone(1000000,"balanced")}
+      setNavCmd(chip.id);
+    }
+  }
+
   return(
     <div style={{
       width:"100%",height:vh,
-      display:"flex",alignItems:"center",justifyContent:"center",
+      display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
       background:"#f0f1f3",fontFamily:FF,
-      overflow:"hidden",
+      overflow:"hidden",gap:6,
     }}>
       <style>{
         "html,body{margin:0;padding:0;background:#f0f1f3;-webkit-text-size-adjust:100%;overflow:hidden}\n"+
-        "body{overscroll-behavior:none}\n"
+        "body{overscroll-behavior:none}\n"+
+        ".nav-scroll::-webkit-scrollbar{display:none}\n"
       }</style>
+
+      {/* ── 네비게이션 칩바 ── */}
+      <div className="nav-scroll" style={{
+        width:frameW,flexShrink:0,
+        display:"flex",alignItems:"center",gap:0,
+        overflowX:"auto",overflowY:"hidden",
+        padding:"0 4px",
+        scrollbarWidth:"none",
+      }}>
+        {NAV_CHIPS.map(function(group,gi){return(
+          <div key={gi} style={{display:"flex",alignItems:"center",gap:3,flexShrink:0}}>
+            {gi>0&&<div style={{width:1,height:20,background:"#d0d3d8",margin:"0 4px",flexShrink:0}}/>}
+            {group.items.map(function(chip){
+              var isActive=activeChip===chip.id;
+              return(
+                <button key={chip.id} onClick={function(){handleChip(chip)}} style={{
+                  padding:"4px 10px",borderRadius:14,border:"none",
+                  background:isActive?"#191f28":"rgba(255,255,255,0.7)",
+                  color:isActive?"#fff":"#6b7684",
+                  fontSize:11,fontWeight:isActive?600:500,fontFamily:FF,
+                  cursor:"pointer",whiteSpace:"nowrap",flexShrink:0,
+                  transition:"all 0.15s ease",
+                  WebkitTapHighlightColor:"transparent",
+                }}>{chip.label}</button>
+              );
+            })}
+          </div>
+        )})}
+      </div>
 
       {/* ── Phone Frame ── */}
       <div style={{
@@ -2351,8 +2346,8 @@ function CellfApp(){
               WebkitOverflowScrolling:"touch",
             }}>
               {showOnboarding
-                ?<OnboardingFlow onDone={handleOnboardingDone}/>
-                :<CellfAppInner/>
+                ?<OnboardingFlow onDone={handleOnboardingDone} initialStep={obStep} onStepChange={function(s){setActiveChip(s===1?"ob1":s===2?"ob2":"ob3")}}/>
+                :<CellfAppInner navCmd={navCmd} onNavDone={function(){setNavCmd(null)}}/>
               }
             </div>
           </div>
